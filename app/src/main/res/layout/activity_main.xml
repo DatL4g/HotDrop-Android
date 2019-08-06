@@ -106,7 +106,8 @@
                     android:layout_margin="16dp"
                     app:backgroundTint="@color/primaryColor"
                     app:rippleColor="@color/primaryDarkColor"
-                    app:srcCompat="@drawable/ic_cloud_upload_white_24dp"/>
+                    app:srcCompat="@drawable/ic_cloud_upload_white_24dp"
+                    app:tint="@android:color/white"/>
             </FrameLayout>
 
             <include

@@ -2,4 +2,5 @@
     <string name="app_name">HotDrop</string>
     <string name="open_swapdrop">Open HotDrop on any other devices to send files.</string>
     <string name="info_text">Easily send files and folders from one device to another.</string>
+    <string name="github_repo">https://github.com/DATL4G/HotDrop-Android</string>
 </resources>

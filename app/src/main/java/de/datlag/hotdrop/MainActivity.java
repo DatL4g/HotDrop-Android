@@ -4,12 +4,15 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import android.animation.Animator;
 import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
@@ -18,6 +21,7 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 
 import com.google.android.material.appbar.AppBarLayout;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
@@ -40,6 +44,9 @@ public class MainActivity extends AppCompatActivity {
     private RevealFrameLayout revealLinearLayout;
     private FrameLayout infoLayout;
     private FrameLayout mainLayout;
+    private AppCompatImageView githubIcon;
+    private AppCompatImageView codeIcon;
+    private AppCompatImageView helpIcon;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -64,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
         infoLayout = findViewById(R.id.info_layout);
         mainLayout = findViewById(R.id.frame);
         reverseRevealButton = findViewById(R.id.reverse_reveal);
+        githubIcon = findViewById(R.id.github_icon);
+        codeIcon = findViewById(R.id.code_icon);
+        helpIcon = findViewById(R.id.help_icon);
     }
 
     private void initializeLogic() {
@@ -88,6 +98,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
+            }
+        });
+
+        githubIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_repo)));
+                startActivity(browserIntent);
+            }
+        });
+
+        codeIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new MaterialAlertDialogBuilder(MainActivity.this)
+                        .setTitle("Used Libraries")
+                        .setMessage("All libs...")
+                        .setPositiveButton("Ok", null)
+                        .show();
+            }
+        });
+
+        helpIcon.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                new MaterialAlertDialogBuilder(MainActivity.this)
+                        .setTitle("Info App / Creator")
+                        .setMessage("All information...")
+                        .setPositiveButton("Ok", null)
+                        .show();
             }
         });
     }
