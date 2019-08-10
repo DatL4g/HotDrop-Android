@@ -3,7 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".OpenSwapDropFragment"
+    tools:context=".OpenHotDropFragment"
     android:background="@android:color/transparent">
 
     <androidx.appcompat.widget.AppCompatTextView
@@ -12,7 +12,7 @@
         android:textColor="@color/primaryColor"
         android:textStyle="normal"
         android:textSize="20sp"
-        android:text="@string/open_swapdrop"
+        android:text="@string/open_hotdrop"
         android:padding="32dp"
         android:gravity="center"
         android:background="@android:color/transparent"/>

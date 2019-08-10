@@ -1,6 +1,23 @@
 <resources>
     <string name="app_name">HotDrop</string>
-    <string name="open_swapdrop">Open HotDrop on any other devices to send files.</string>
+    <string name="open_hotdrop">Open HotDrop on any other devices to send files.</string>
     <string name="info_text">Easily send files and folders from one device to another.</string>
     <string name="github_repo">https://github.com/DATL4G/HotDrop-Android</string>
+    <string name="dependencies">Dependencies</string>
+    <string name="about">About</string>
+    <string name="data_protection_title">Privacy Policy</string>
+    <string name="ok">OK</string>
+    <string name="okay">Okay</string>
+    <string name="cancel">Cancel</string>
+    <string name="data_protection_text">This is just an example</string>
+    <string name="open_in_browser">Open in Browser</string>
+    <string name="location">Location</string>
+    <string name="location_needed">This permission is needed to discover nearby devices</string>
+    <string name="settings">Settings</string>
+    <string name="close">Close</string>
+    <string-array name="available_settings">
+        <item>Accounts</item>
+        <item>Connectivity</item>
+        <item>Permissions</item>
+    </string-array>
 </resources>

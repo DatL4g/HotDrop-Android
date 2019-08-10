@@ -9,17 +9,17 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-public class OpenSwapDropFragment extends Fragment {
+public class OpenHotDropFragment extends Fragment {
 
     private static final String ARG_PARAM1 = "param1";
 
     private String mParam1;
 
-    public OpenSwapDropFragment() {
+    public OpenHotDropFragment() {
     }
 
-    public static OpenSwapDropFragment newInstance(String param1) {
-        OpenSwapDropFragment fragment = new OpenSwapDropFragment();
+    public static OpenHotDropFragment newInstance(String param1) {
+        OpenHotDropFragment fragment = new OpenHotDropFragment();
         Bundle args = new Bundle();
         args.putString(ARG_PARAM1, param1);
         fragment.setArguments(args);
@@ -38,7 +38,7 @@ public class OpenSwapDropFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
-        return inflater.inflate(R.layout.fragment_open_swap_drop, container, false);
+        return inflater.inflate(R.layout.fragment_open_hotdrop, container, false);
     }
 
     @Override
