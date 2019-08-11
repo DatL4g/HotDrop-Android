@@ -32,6 +32,7 @@ import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
@@ -76,6 +77,7 @@ public class MainActivity extends AppCompatActivity {
     private AppBarLayout appBarLayout;
     private Toolbar toolbar;
     private FloatingActionButton fab;
+    private AppCompatImageView backgroundImage;
     private AppCompatImageView tuneButton;
     private AppCompatImageView revealButton;
     private AppCompatImageView reverseRevealButton;
@@ -115,6 +117,7 @@ public class MainActivity extends AppCompatActivity {
         appBarLayout = findViewById(R.id.app_bar);
         toolbar = findViewById(R.id.toolbar);
         fab = findViewById(R.id.fab);
+        backgroundImage = findViewById(R.id.background_image);
         tuneButton = findViewById(R.id.tune_button);
         revealButton = findViewById(R.id.reveal_button);
         revealLinearLayout = findViewById(R.id.reveal_parent);
@@ -128,6 +131,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initializeLogic() {
         activity = MainActivity.this;
+        Glide.with(activity).load(ContextCompat.getDrawable(activity, R.drawable.circles)).centerCrop().into(backgroundImage);
         settingsArray = getResources().getStringArray(R.array.available_settings);
         signInArray = getResources().getStringArray(R.array.sign_in_options);
 
