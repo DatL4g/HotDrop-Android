@@ -1,10 +1,13 @@
 package de.datlag.hotdrop;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
@@ -18,17 +21,34 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.Spanned;
+import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
+import android.widget.TextView;
 
+import com.google.android.gms.auth.api.signin.GoogleSignIn;
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
+import com.google.android.gms.auth.api.signin.GoogleSignInClient;
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
+import com.google.android.gms.common.api.ApiException;
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.auth.PlayGamesAuthProvider;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -52,6 +72,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int STORAGE_WRITE_PERMISSION_CODE = 422;
 
     private Activity activity;
+    private CoordinatorLayout coordinatorLayout;
     private AppBarLayout appBarLayout;
     private Toolbar toolbar;
     private FloatingActionButton fab;
@@ -67,6 +88,13 @@ public class MainActivity extends AppCompatActivity {
 
     private Markwon markwon;
     private String[] settingsArray;
+    private String[] signInArray;
+
+    private static final int RC_SIGN_IN = 520;
+    private static final int GAMES_SIGN_IN = 521;
+    private FirebaseAuth mAuth;
+    private FirebaseUser mUser;
+    private GoogleSignInClient mGoogleSignInClient;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -83,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void initialize() {
+        coordinatorLayout = findViewById(R.id.coordinator);
         appBarLayout = findViewById(R.id.app_bar);
         toolbar = findViewById(R.id.toolbar);
         fab = findViewById(R.id.fab);
@@ -100,6 +129,18 @@ public class MainActivity extends AppCompatActivity {
     private void initializeLogic() {
         activity = MainActivity.this;
         settingsArray = getResources().getStringArray(R.array.available_settings);
+        signInArray = getResources().getStringArray(R.array.sign_in_options);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestIdToken(getString(R.string.default_web_client_id))
+                .requestEmail()
+                .build();
+        GoogleSignInOptions gsoGames = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
+                .requestServerAuthCode(getString(R.string.default_web_client_id))
+                .build();
+        mGoogleSignInClient = GoogleSignIn.getClient(activity, gso);
+        mAuth = FirebaseAuth.getInstance();
+
         markwon = Markwon.builder(activity)
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(HtmlPlugin.create())
@@ -172,30 +213,30 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 new MaterialAlertDialogBuilder(activity)
                         .setTitle("Info App / Creator")
-                .setMessage("All information...")
-                .setPositiveButton(getString(R.string.okay), null)
-                .setNeutralButton(getString(R.string.data_protection_title), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
+                        .setMessage("All information...")
+                        .setPositiveButton(getString(R.string.okay), null)
+                        .setNeutralButton(getString(R.string.data_protection_title), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
 
-                        new MaterialAlertDialogBuilder(activity)
-                                .setTitle(getString(R.string.data_protection_title))
-                                .setMessage(markdown)
-                                .setPositiveButton(getString(R.string.okay), null)
-                                .setNeutralButton(getString(R.string.open_in_browser), new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_repo)));
-                                        startActivity(browserIntent);
-                                    }
-                                })
-                                .show();
-                    }
-                })
-                .show();
+                                new MaterialAlertDialogBuilder(activity)
+                                        .setTitle(getString(R.string.data_protection_title))
+                                        .setMessage(markdown)
+                                        .setPositiveButton(getString(R.string.okay), null)
+                                        .setNeutralButton(getString(R.string.open_in_browser), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_repo)));
+                                                startActivity(browserIntent);
+                                            }
+                                        })
+                                        .show();
+                            }
+                        })
+                        .show();
             }
         });
-        
+
         permissionCheck(new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
@@ -238,17 +279,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 });
                 builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                            }
-                        });
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                });
                 builder.create().show();
             } else {
                 ActivityCompat.requestPermissions(activity, new String[]{permission}, permissionCodes[i]);
             }
-
-
         }
     }
 
@@ -293,7 +332,8 @@ public class MainActivity extends AppCompatActivity {
         animator.setDuration(duration);
         animator.addListener(new Animator.AnimatorListener() {
             @Override
-            public void onAnimationStart(Animator animation) {}
+            public void onAnimationStart(Animator animation) {
+            }
 
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -303,10 +343,12 @@ public class MainActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onAnimationCancel(Animator animation) {}
+            public void onAnimationCancel(Animator animation) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animator animation) {}
+            public void onAnimationRepeat(Animator animation) {
+            }
         });
 
         if (isReverse) {
@@ -332,23 +374,23 @@ public class MainActivity extends AppCompatActivity {
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
-            switch (requestCode) {
-                case LOCATION_PERMISSION_CODE:
-                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        // enable P2P
-                    }
-                    break;
-                case STORAGE_READ_PERMISSION_CODE:
-                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        // read storage
-                    }
-                    break;
-                case STORAGE_WRITE_PERMISSION_CODE:
-                    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                        // write storage
-                    }
-                    break;
-            }
+        switch (requestCode) {
+            case LOCATION_PERMISSION_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // enable P2P
+                }
+                break;
+            case STORAGE_READ_PERMISSION_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // read storage
+                }
+                break;
+            case STORAGE_WRITE_PERMISSION_CODE:
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    // write storage
+                }
+                break;
+        }
     }
 
     private void switchSettings(int selected) {
@@ -357,10 +399,29 @@ public class MainActivity extends AppCompatActivity {
 
         switch (selected) {
             case 0:
-                builder.setMessage("Test: selected "+selected);
+                if (mUser != null) {
+                    builder.setTitle("Logged in");
+                    String userName = (mUser.getDisplayName() != null) ? mUser.getDisplayName() : "Guest";
+                    builder.setMessage("Welcome, " + userName);
+                    builder.setPositiveButton(getString(R.string.close), null);
+                    builder.setNeutralButton("Log out", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            signOut();
+                        }
+                    });
+                    break;
+                }
+                builder.setItems(signInArray, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        signIn(which);
+                    }
+                });
+                builder.setPositiveButton(getString(R.string.close), null);
                 break;
             case 1:
-                builder.setMessage("Test: selected "+selected);
+                builder.setMessage("Test: selected " + selected);
                 break;
             case 2:
                 ArrayList<String> statusList = new ArrayList<>();
@@ -406,5 +467,137 @@ public class MainActivity extends AppCompatActivity {
         }
 
         builder.create().show();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
+        switch (requestCode) {
+            case RC_SIGN_IN:
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    firebaseAuthWithGoogle(account);
+                } catch (ApiException ignored) {}
+                break;
+
+            case GAMES_SIGN_IN:
+                try {
+                    GoogleSignInAccount account = task.getResult(ApiException.class);
+                    firebaseAuthWithPlayGames(account);
+                } catch (ApiException ignored) {}
+                break;
+        }
+    }
+
+    private void firebaseAuthWithGoogle(@NotNull GoogleSignInAccount acct) {
+        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            mUser = mAuth.getCurrentUser();
+                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + mUser.getDisplayName(), Snackbar.LENGTH_LONG);
+                            showSnackbar(snackbar);
+                        } else {
+                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
+                            showSnackbar(snackbar);
+                        }
+                    }
+                });
+    }
+
+    private void firebaseAuthWithPlayGames(@NotNull GoogleSignInAccount acct) {
+        AuthCredential credential = PlayGamesAuthProvider.getCredential(acct.getServerAuthCode());
+        mAuth.signInWithCredential(credential)
+                .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        if (task.isSuccessful()) {
+                            mUser = mAuth.getCurrentUser();
+                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + mUser.getDisplayName(), Snackbar.LENGTH_LONG);
+                            showSnackbar(snackbar);
+                        } else {
+                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
+                            showSnackbar(snackbar);
+                        }
+                    }
+                });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mUser = mAuth.getCurrentUser();
+    }
+
+    private void signIn(int selected) {
+        switch (selected) {
+            case 0:
+                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
+                startActivityForResult(signInIntent, RC_SIGN_IN);
+                break;
+
+            case 1:
+                Intent signInGames = mGoogleSignInClient.getSignInIntent();
+                startActivityForResult(signInGames, GAMES_SIGN_IN);
+                break;
+
+            case 2:
+                mAuth.signInAnonymously()
+                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
+                                    mUser = mAuth.getCurrentUser();
+                                    Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sign_in_guest), Snackbar.LENGTH_LONG);
+                                    showSnackbar(snackbar);
+                                } else {
+                                    Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
+                                    showSnackbar(snackbar);
+                                }
+                            }
+                        });
+                break;
+        }
+    }
+
+    private void signOut() {
+        mAuth.signOut();
+        mGoogleSignInClient.signOut().addOnCompleteListener(activity,
+                new OnCompleteListener<Void>() {
+                    @Override
+                    public void onComplete(@NonNull Task<Void> task) {
+                        if (task.isSuccessful()) {
+                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sing_out), Snackbar.LENGTH_LONG);
+                            showSnackbar(snackbar);
+                        }
+                        if (mUser.isAnonymous()) {
+                            mUser.delete();
+                        }
+                        mUser = null;
+                    }
+                });
+    }
+
+    public void showSnackbar(@NotNull Snackbar snackbar) {
+        final View snackBarView = snackbar.getView();
+        final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackBarView.getLayoutParams();
+        final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
+
+        snackBarText.setGravity(Gravity.CENTER);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        }
+        snackBarText.setTypeface(snackBarText.getTypeface(), Typeface.BOLD);
+
+        params.setMargins(params.leftMargin + (int) getResources().getDimension(R.dimen.snackbar_margin),
+                params.topMargin,
+                params.rightMargin + (int) getResources().getDimension(R.dimen.snackbar_margin),
+                params.bottomMargin + (int) getResources().getDimension(R.dimen.snackbar_margin));
+
+        snackBarView.setLayoutParams(params);
+        snackbar.show();
     }
 }

@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:keepScreenOn="true"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:id="@+id/coordinator">
 
     <LinearLayout
         android:layout_width="match_parent"

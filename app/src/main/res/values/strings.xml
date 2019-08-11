@@ -20,4 +20,14 @@
         <item>Connectivity</item>
         <item>Permissions</item>
     </string-array>
+    <string name="sign_in">Sign in</string>
+    <string-array name="sign_in_options">
+        <item>Google</item>
+        <item>Play Games</item>
+        <item>Anonymous</item>
+    </string-array>
+    <string name="sing_out">Task failed successfully!</string>
+    <string name="login_failed">Log in failed! Please try again!</string>
+    <string name="sign_in_guest">Logged in as Guest!</string>
+    <string name="logged_in_as">Logged in as&#160;</string>
 </resources>
