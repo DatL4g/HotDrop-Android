@@ -80,10 +80,24 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
     }
 
     private void initializeLogic() {
-        FlexboxLayoutManager layoutManager = new FlexboxLayoutManager(getActivity());
-        layoutManager.setFlexDirection(FlexDirection.COLUMN);
-        layoutManager.setJustifyContent(JustifyContent.CENTER);
-        recyclerView.setLayoutManager(layoutManager);
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 6);
+        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
+            @Override
+            public int getSpanSize(int position) {
+                int span;
+                span = mHosts.size() % 3;
+                if (mHosts.size() < 3) {
+                    return 6;
+                } else if (span == 0 || (position <= ((mHosts.size() - 1) - span))) {
+                    return 2;
+                } else if (span == 1) {
+                    return 6;
+                } else {
+                    return 3;
+                }
+            }
+        });
+        recyclerView.setLayoutManager(gridLayoutManager);
         adapter = new ChooseHostRecyclerAdapter(getActivity(), mHosts);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
