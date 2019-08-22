@@ -2,7 +2,6 @@ package de.datlag.hotdrop;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.AppCompatImageView;
@@ -25,13 +24,18 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
+import com.adroitandroid.near.connect.NearConnect;
+import com.adroitandroid.near.discovery.NearDiscovery;
+import com.adroitandroid.near.model.Host;
 import com.bumptech.glide.Glide;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -51,10 +55,15 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.auth.PlayGamesAuthProvider;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
+import github.nisrulz.easydeviceinfo.base.EasyDeviceMod;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.widget.RevealFrameLayout;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
@@ -62,7 +71,7 @@ import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.html.HtmlPlugin;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SearchDeviceFragment.OnFragmentInteractionListener, ChooseDeviceFragment.OnFragmentInteractionListener {
 
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -98,6 +107,12 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseUser mUser;
     private GoogleSignInClient mGoogleSignInClient;
 
+    private NearDiscovery mNearDiscovery;
+    private NearConnect mNearConnect;
+
+    private SearchDeviceFragment searchDeviceFragment;
+    private ChooseDeviceFragment chooseDeviceFragment;
+
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
@@ -110,6 +125,22 @@ public class MainActivity extends AppCompatActivity {
 
         initialize();
         initializeLogic();
+
+        mNearDiscovery = new NearDiscovery.Builder()
+                .setContext(this)
+                .setDiscoverableTimeoutMillis(Long.MAX_VALUE)
+                .setDiscoveryTimeoutMillis(Long.MAX_VALUE)
+                .setDiscoverablePingIntervalMillis(500)
+                .setDiscoveryListener(getNearDiscoveryListener(), Looper.getMainLooper())
+                .build();
+
+        mNearConnect = new NearConnect.Builder()
+                .fromDiscovery(mNearDiscovery)
+                .setContext(this)
+                .setListener(getNearConnectListener(), Looper.getMainLooper())
+                .build();
+
+
     }
 
     private void initialize() {
@@ -150,7 +181,8 @@ public class MainActivity extends AppCompatActivity {
                 .usePlugin(HtmlPlugin.create())
                 .build();
         setSupportActionBar(toolbar);
-        switch2Fragment(OpenHotDropFragment.newInstance("Test"));
+        searchDeviceFragment = SearchDeviceFragment.newInstance();
+        switch2Fragment(searchDeviceFragment);
 
         revealButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -591,9 +623,6 @@ public class MainActivity extends AppCompatActivity {
         final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
 
         snackBarText.setGravity(Gravity.CENTER);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        }
         snackBarText.setTypeface(snackBarText.getTypeface(), Typeface.BOLD);
 
         params.setMargins(params.leftMargin + (int) getResources().getDimension(R.dimen.snackbar_margin),
@@ -603,5 +632,115 @@ public class MainActivity extends AppCompatActivity {
 
         snackBarView.setLayoutParams(params);
         snackbar.show();
+    }
+
+    @Contract(value = " -> new", pure = true)
+    @NonNull
+    private NearDiscovery.Listener getNearDiscoveryListener() {
+        return new NearDiscovery.Listener() {
+            @Override
+            public void onPeersUpdate(Set<Host> hosts) {
+                if (hosts.size() > 0) {
+                    chooseDeviceFragment = new ChooseDeviceFragment(hosts);
+                    switch2Fragment(chooseDeviceFragment);
+                } else {
+                    switch2Fragment(searchDeviceFragment);
+                }
+            }
+
+            @Override
+            public void onDiscoveryTimeout() {
+                stopDiscovery();
+                searchDeviceFragment.setSearch(false);
+            }
+
+            @Override
+            public void onDiscoveryFailure(Throwable e) {
+                stopDiscovery();
+                searchDeviceFragment.setSearch(false);
+            }
+
+            @Override
+            public void onDiscoverableTimeout() {
+                stopDiscovery();
+                searchDeviceFragment.setSearch(false);
+            }
+        };
+    }
+
+    @Contract(value = " -> new", pure = true)
+    @NonNull
+    private NearConnect.Listener getNearConnectListener() {
+        return new NearConnect.Listener() {
+            @Override
+            public void onReceive(byte[] bytes, final Host sender) {
+                // Process incoming data here
+            }
+
+            @Override
+            public void onSendComplete(long jobId) {
+                // jobId is the same as the return value of NearConnect.send(), an approximate epoch time of the send
+            }
+
+            @Override
+            public void onSendFailure(Throwable e, long jobId) {
+                // handle failed sends here
+            }
+
+            @Override
+            public void onStartListenFailure(Throwable e) {
+                // This tells that the NearConnect.startReceiving() didn't go through properly.
+                // Common cause would be that another instance of NearConnect is already listening and it's NearConnect.stopReceiving() needs to be called first
+            }
+        };
+    }
+
+    private void startDiscovery() {
+        EasyDeviceMod easyDeviceMod = new EasyDeviceMod(activity);
+        if (!mNearDiscovery.isDiscovering()) {
+            mNearDiscovery.makeDiscoverable(easyDeviceMod.getDeviceType(activity) + getPackageName() + "_" + Build.DEVICE);
+            if (!mNearConnect.isReceiving()) {
+                mNearConnect.startReceiving();
+            }
+
+            mNearDiscovery.startDiscovery();
+        }
+    }
+
+    private void stopDiscovery() {
+        if (mNearDiscovery.isDiscovering()) {
+            mNearDiscovery.makeNonDiscoverable();
+            mNearDiscovery.stopDiscovery();
+        }
+        if (mNearConnect.isReceiving()) {
+            mNearConnect.stopReceiving(false);
+            searchDeviceFragment.setSearch(false);
+        }
+    }
+
+    @Override
+    public void onSearchFragmentInteraction(boolean search) {
+        if (search) {
+            startDiscovery();
+        } else {
+            stopDiscovery();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        stopDiscovery();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        stopDiscovery();
+    }
+
+    @Override
+    public void onChooseFragmentInteraction(Host host) {
+
     }
 }

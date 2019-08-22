@@ -30,4 +30,7 @@
     <string name="login_failed">Log in failed! Please try again!</string>
     <string name="sign_in_guest">Logged in as Guest!</string>
     <string name="logged_in_as">Logged in as&#160;</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

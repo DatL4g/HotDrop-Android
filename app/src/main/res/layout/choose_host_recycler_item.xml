@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.floatingactionbutton.FloatingActionButton
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="?attr/actionBarSize"
+    android:layout_height="?attr/actionBarSize"
+    android:layout_gravity="center_horizontal"
+    android:layout_margin="8dp"
+    android:id="@+id/fab_device"
+    app:backgroundTint="@color/primaryColor"
+    app:rippleColor="@color/primaryDarkColor"
+    app:srcCompat="@drawable/ic_phone_android_white_24dp"
+    app:tint="@android:color/white" />
