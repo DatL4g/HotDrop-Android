@@ -109,9 +109,12 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
     private NearDiscovery mNearDiscovery;
     private NearConnect mNearConnect;
+    public static final String MESSAGE_REQUEST_START_TRANSFER = "start_chat";
+    public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
+    public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
 
     private SearchDeviceFragment searchDeviceFragment;
-    private ChooseDeviceFragment chooseDeviceFragment;
+    private ChooseDeviceFragment chooseDeviceFragment = null;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -640,11 +643,24 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         return new NearDiscovery.Listener() {
             @Override
             public void onPeersUpdate(Set<Host> hosts) {
+                for (Host host : hosts) {
+                    if (!host.getName().contains(getPackageName())) {
+                        hosts.remove(host);
+                    }
+                }
+
                 if (hosts.size() > 0) {
-                    chooseDeviceFragment = new ChooseDeviceFragment(hosts);
+                    if (chooseDeviceFragment == null) {
+                        chooseDeviceFragment = new ChooseDeviceFragment(hosts);
+                    } else {
+                        chooseDeviceFragment.setHosts(hosts);
+                    }
                     switch2Fragment(chooseDeviceFragment);
                 } else {
                     switch2Fragment(searchDeviceFragment);
+                    if (mNearDiscovery.isDiscovering()) {
+                        searchDeviceFragment.setSearch(true);
+                    }
                 }
             }
 
@@ -674,7 +690,37 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         return new NearConnect.Listener() {
             @Override
             public void onReceive(byte[] bytes, final Host sender) {
-                // Process incoming data here
+                if (bytes != null) {
+                    switch (new String(bytes)) {
+                        case MESSAGE_REQUEST_START_TRANSFER:
+                            new MaterialAlertDialogBuilder(MainActivity.this)
+                                    .setMessage(sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1)
+                                            + " would like to start chatting with you.")
+                                    .setPositiveButton("Start", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mNearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
+                                            Log.e("Chatting", "start");
+                                        }
+                                    })
+                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            mNearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
+                                        }
+                                    }).create().show();
+                            break;
+                        case MESSAGE_RESPONSE_DECLINE_REQUEST:
+                            new MaterialAlertDialogBuilder(MainActivity.this)
+                                    .setMessage(sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1)
+                                            + " is busy at the moment.")
+                                    .setNeutralButton("Ok", null).create().show();
+                            break;
+                        case MESSAGE_RESPONSE_ACCEPT_REQUEST:
+                            Log.e("Chatting", "start");
+                            break;
+                    }
+                }
             }
 
             @Override
@@ -698,7 +744,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private void startDiscovery() {
         EasyDeviceMod easyDeviceMod = new EasyDeviceMod(activity);
         if (!mNearDiscovery.isDiscovering()) {
-            mNearDiscovery.makeDiscoverable(easyDeviceMod.getDeviceType(activity) + getPackageName() + "_" + Build.DEVICE);
+            mNearDiscovery.makeDiscoverable(easyDeviceMod.getDeviceType(activity) + getPackageName() + "_" + Build.MODEL);
             if (!mNearConnect.isReceiving()) {
                 mNearConnect.startReceiving();
             }
@@ -741,6 +787,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
     @Override
     public void onChooseFragmentInteraction(Host host) {
-
+        mNearConnect.send(MESSAGE_REQUEST_START_TRANSFER.getBytes(), host);
     }
 }

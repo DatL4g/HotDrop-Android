@@ -6,7 +6,6 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearSnapHelper;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.util.Log;
@@ -15,12 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.adroitandroid.near.model.Host;
-import com.google.android.flexbox.AlignContent;
-import com.google.android.flexbox.FlexDirection;
-import com.google.android.flexbox.FlexboxLayoutManager;
-import com.google.android.flexbox.JustifyContent;
 
-import java.util.ArrayList;
 import java.util.Set;
 
 import de.datlag.hotdrop.utils.ChooseHostRecyclerAdapter;
@@ -45,7 +39,6 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         rootView = inflater.inflate(R.layout.fragment_choose_device, container, false);
         initialize();
         initializeLogic();
@@ -75,29 +68,38 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
         mListener = null;
     }
 
+    public void setHosts(Set<Host> hosts) {
+        this.mHosts = hosts;
+        setRecyclerGrid();
+        adapter.notifyDataSetChanged();
+    }
+
+    private void setRecyclerGrid() {
+        int span;
+        switch (mHosts.size()) {
+            case 1:
+                span = 1;
+                break;
+            case 2:
+            case 3:
+            case 4:
+                span = 2;
+                break;
+
+            default:
+                span = 3;
+                break;
+        }
+        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), span);
+        recyclerView.setLayoutManager(gridLayoutManager);
+    }
+
     private void initialize() {
         recyclerView = rootView.findViewById(R.id.choose_recycler);
     }
 
     private void initializeLogic() {
-        GridLayoutManager gridLayoutManager = new GridLayoutManager(getActivity(), 6);
-        gridLayoutManager.setSpanSizeLookup(new GridLayoutManager.SpanSizeLookup() {
-            @Override
-            public int getSpanSize(int position) {
-                int span;
-                span = mHosts.size() % 3;
-                if (mHosts.size() < 3) {
-                    return 6;
-                } else if (span == 0 || (position <= ((mHosts.size() - 1) - span))) {
-                    return 2;
-                } else if (span == 1) {
-                    return 6;
-                } else {
-                    return 3;
-                }
-            }
-        });
-        recyclerView.setLayoutManager(gridLayoutManager);
+        setRecyclerGrid();
         adapter = new ChooseHostRecyclerAdapter(getActivity(), mHosts);
         adapter.setClickListener(this);
         recyclerView.setAdapter(adapter);
