@@ -84,17 +84,21 @@
                         android:id="@+id/tune_button"
                         android:layout_width="?attr/actionBarSize"
                         android:layout_height="?attr/actionBarSize"
-                        android:background="@android:color/transparent"
+                        android:clickable="true"
+                        android:background="@drawable/settings_info_icon_selector"
                         android:scaleType="center"
-                        app:srcCompat="@drawable/ic_tune_black_24dp" />
+                        app:srcCompat="@drawable/ic_tune_black_24dp"
+                        android:focusable="true" />
 
                     <androidx.appcompat.widget.AppCompatImageView
                         android:id="@+id/reveal_button"
                         android:layout_width="?attr/actionBarSize"
                         android:layout_height="?attr/actionBarSize"
-                        android:background="@android:color/transparent"
+                        android:clickable="true"
+                        android:background="@drawable/settings_info_icon_selector"
                         android:scaleType="center"
-                        app:srcCompat="@drawable/ic_info_outline_black_24dp" />
+                        app:srcCompat="@drawable/ic_info_outline_black_24dp"
+                        android:focusable="true" />
 
                 </LinearLayout>
 

@@ -16,7 +16,10 @@
         android:layout_height="?attr/actionBarSize"
         android:layout_gravity="end"
         android:scaleType="center"
-        app:srcCompat="@drawable/ic_close_white_24dp" />
+        app:srcCompat="@drawable/ic_close_white_24dp"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="@drawable/info_layout_icon_selector"/>
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -70,7 +73,10 @@
                 android:layout_marginRight="16dp"
                 android:padding="2dp"
                 android:scaleType="fitCenter"
-                app:srcCompat="@drawable/ic_github_white_24dp" />
+                app:srcCompat="@drawable/ic_github_white_24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/info_layout_icon_selector"/>
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/code_icon"
@@ -81,7 +87,10 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="16dp"
                 android:scaleType="fitCenter"
-                app:srcCompat="@drawable/ic_code_white_24dp" />
+                app:srcCompat="@drawable/ic_code_white_24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/info_layout_icon_selector"/>
 
             <androidx.appcompat.widget.AppCompatImageView
                 android:id="@+id/help_icon"
@@ -92,7 +101,10 @@
                 android:layout_marginEnd="16dp"
                 android:layout_marginRight="16dp"
                 android:scaleType="fitCenter"
-                app:srcCompat="@drawable/ic_help_outline_white_24dp" />
+                app:srcCompat="@drawable/ic_help_outline_white_24dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:background="@drawable/info_layout_icon_selector"/>
 
         </LinearLayout>
     </LinearLayout>
