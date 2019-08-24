@@ -56,4 +56,6 @@ dependencies {
     implementation "io.noties.markwon:core:4.1.0"
     implementation "io.noties.markwon:ext-strikethrough:4.1.0"
     implementation "io.noties.markwon:html:4.1.0"
+
+    implementation 'androidx.exifinterface:exifinterface:1.1.0-beta01'
 }

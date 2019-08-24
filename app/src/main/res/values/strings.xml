@@ -30,6 +30,9 @@
     <string name="login_failed">Log in failed! Please try again!</string>
     <string name="sign_in_guest">Logged in as Guest!</string>
     <string name="logged_in_as">Logged in as&#160;</string>
+    <string name="start">Start</string>
+    <string name="want2connect">&#160;would like to connect with you.</string>
+    <string name="is_busy">&#160;is busy at the moment.</string>
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>

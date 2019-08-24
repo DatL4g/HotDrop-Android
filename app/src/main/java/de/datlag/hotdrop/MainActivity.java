@@ -1,18 +1,5 @@
 package de.datlag.hotdrop;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
-import androidx.appcompat.widget.AppCompatImageView;
-import androidx.appcompat.widget.Toolbar;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-
 import android.Manifest;
 import android.animation.Animator;
 import android.app.Activity;
@@ -26,12 +13,24 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Looper;
 import android.text.Spanned;
-import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.Toolbar;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
@@ -59,8 +58,6 @@ import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 
 import github.nisrulz.easydeviceinfo.base.EasyDeviceMod;
@@ -693,31 +690,13 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                 if (bytes != null) {
                     switch (new String(bytes)) {
                         case MESSAGE_REQUEST_START_TRANSFER:
-                            new MaterialAlertDialogBuilder(MainActivity.this)
-                                    .setMessage(sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1)
-                                            + " would like to start chatting with you.")
-                                    .setPositiveButton("Start", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            mNearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
-                                            Log.e("Chatting", "start");
-                                        }
-                                    })
-                                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                                        @Override
-                                        public void onClick(DialogInterface dialog, int which) {
-                                            mNearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
-                                        }
-                                    }).create().show();
-                            break;
-                        case MESSAGE_RESPONSE_DECLINE_REQUEST:
-                            new MaterialAlertDialogBuilder(MainActivity.this)
-                                    .setMessage(sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1)
-                                            + " is busy at the moment.")
-                                    .setNeutralButton("Ok", null).create().show();
-                            break;
                         case MESSAGE_RESPONSE_ACCEPT_REQUEST:
-                            Log.e("Chatting", "start");
+                        case MESSAGE_RESPONSE_DECLINE_REQUEST:
+                            startHostTransfer(sender, bytes);
+                            break;
+
+                        default:
+                            // TODO: file transfer
                             break;
                     }
                 }
@@ -761,6 +740,41 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         if (mNearConnect.isReceiving()) {
             mNearConnect.stopReceiving(false);
             searchDeviceFragment.setSearch(false);
+        }
+    }
+
+    private void startHostTransfer(@NotNull final Host sender, byte[] bytes) {
+        String senderName = sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
+
+        switch (new String(bytes)) {
+            case MESSAGE_REQUEST_START_TRANSFER:
+                new MaterialAlertDialogBuilder(activity)
+                        .setMessage(senderName + getString(R.string.want2connect))
+                        .setPositiveButton(getString(R.string.start), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mNearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
+                            }
+                        })
+                        .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                mNearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
+                            }
+                        }).create().show();
+                break;
+            case MESSAGE_RESPONSE_DECLINE_REQUEST:
+                new MaterialAlertDialogBuilder(activity)
+                        .setMessage(senderName + getString(R.string.is_busy))
+                        .setNeutralButton(getString(R.string.okay), null).create().show();
+                break;
+            case MESSAGE_RESPONSE_ACCEPT_REQUEST:
+                // TODO: start fragment with file transfer
+                new MaterialAlertDialogBuilder(activity)
+                        .setMessage("Client accepted request")
+                        .setPositiveButton(getString(R.string.okay), null)
+                        .create().show();
+                break;
         }
     }
 
