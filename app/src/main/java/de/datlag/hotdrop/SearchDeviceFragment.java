@@ -5,17 +5,16 @@ import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.support.v4.media.session.PlaybackStateCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
-import android.view.animation.LinearInterpolator;
-import android.view.animation.RotateAnimation;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import org.jetbrains.annotations.NotNull;
 
 import de.datlag.hotdrop.utils.CircularAnimation;
 
@@ -38,7 +37,7 @@ public class SearchDeviceFragment extends Fragment {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_search_device, container, false);
         initialize();
@@ -58,6 +57,7 @@ public class SearchDeviceFragment extends Fragment {
             searchFAB.startAnimation(rotateAnimation);
         } else {
             rotateAnimation.cancel();
+            rotateAnimation.reset();
         }
     }
 
@@ -87,8 +87,8 @@ public class SearchDeviceFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 if (mListener != null) {
-                    mListener.onSearchFragmentInteraction(!search);
                     setSearch(!search);
+                    mListener.onSearchFragmentInteraction(search);
                 }
             }
         });
