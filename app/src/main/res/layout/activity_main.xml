@@ -8,7 +8,7 @@
     tools:context=".MainActivity"
     android:id="@+id/coordinator">
 
-    <LinearLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -65,16 +65,16 @@
 
                 </FrameLayout>
 
-                <LinearLayout
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:id="@+id/fragment_view"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@android:color/transparent"
                     android:orientation="vertical">
 
-                </LinearLayout>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <LinearLayout
+                <androidx.appcompat.widget.LinearLayoutCompat
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
@@ -100,7 +100,7 @@
                         app:srcCompat="@drawable/ic_info_outline_black_24dp"
                         android:focusable="true" />
 
-                </LinearLayout>
+                </androidx.appcompat.widget.LinearLayoutCompat>
 
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:layout_width="?attr/actionBarSize"
@@ -121,5 +121,5 @@
 
 
         </io.codetail.widget.RevealFrameLayout>
-    </LinearLayout>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

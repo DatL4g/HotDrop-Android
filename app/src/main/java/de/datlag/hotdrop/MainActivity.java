@@ -11,8 +11,8 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Looper;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -32,35 +32,23 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.adroitandroid.near.connect.NearConnect;
-import com.adroitandroid.near.discovery.NearDiscovery;
 import com.adroitandroid.near.model.Host;
 import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
-import com.google.android.gms.auth.api.signin.GoogleSignInClient;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.api.ApiException;
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.AuthCredential;
-import com.google.firebase.auth.AuthResult;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.PlayGamesAuthProvider;
+import com.obsez.android.lib.filechooser.ChooserDialog;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.File;
 import java.util.ArrayList;
-import java.util.Set;
 
-import github.nisrulz.easydeviceinfo.base.EasyDeviceMod;
+import de.datlag.hotdrop.utils.DiscoverHost;
+import de.datlag.hotdrop.utils.FirebaseManager;
+import de.datlag.hotdrop.utils.PermissionManager;
 import io.codetail.animation.ViewAnimationUtils;
 import io.codetail.widget.RevealFrameLayout;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
@@ -73,10 +61,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
-
-    private static final int LOCATION_PERMISSION_CODE = 420;
-    private static final int STORAGE_READ_PERMISSION_CODE = 421;
-    private static final int STORAGE_WRITE_PERMISSION_CODE = 422;
 
     private Activity activity;
     private CoordinatorLayout coordinatorLayout;
@@ -98,20 +82,11 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private String[] settingsArray;
     private String[] signInArray;
 
-    private static final int RC_SIGN_IN = 520;
-    private static final int GAMES_SIGN_IN = 521;
-    private FirebaseAuth mAuth;
-    private FirebaseUser mUser;
-    private GoogleSignInClient mGoogleSignInClient;
+    private PermissionManager permissionManager;
+    private FirebaseManager firebaseManager;
 
-    private NearDiscovery mNearDiscovery;
-    private NearConnect mNearConnect;
-    public static final String MESSAGE_REQUEST_START_TRANSFER = "start_chat";
-    public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
-    public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
-
-    private SearchDeviceFragment searchDeviceFragment;
-    private ChooseDeviceFragment chooseDeviceFragment = null;
+    private DiscoverHost discoverHost;
+    public SearchDeviceFragment searchDeviceFragment;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -125,22 +100,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
         initialize();
         initializeLogic();
-
-        mNearDiscovery = new NearDiscovery.Builder()
-                .setContext(this)
-                .setDiscoverableTimeoutMillis(Long.MAX_VALUE)
-                .setDiscoveryTimeoutMillis(Long.MAX_VALUE)
-                .setDiscoverablePingIntervalMillis(500)
-                .setDiscoveryListener(getNearDiscoveryListener(), Looper.getMainLooper())
-                .build();
-
-        mNearConnect = new NearConnect.Builder()
-                .fromDiscovery(mNearDiscovery)
-                .setContext(this)
-                .setListener(getNearConnectListener(), Looper.getMainLooper())
-                .build();
-
-
     }
 
     private void initialize() {
@@ -166,23 +125,59 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         settingsArray = getResources().getStringArray(R.array.available_settings);
         signInArray = getResources().getStringArray(R.array.sign_in_options);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.default_web_client_id))
-                .requestEmail()
-                .build();
-        GoogleSignInOptions gsoGames = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_GAMES_SIGN_IN)
-                .requestServerAuthCode(getString(R.string.default_web_client_id))
-                .build();
-        mGoogleSignInClient = GoogleSignIn.getClient(activity, gso);
-        mAuth = FirebaseAuth.getInstance();
-
         markwon = Markwon.builder(activity)
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(HtmlPlugin.create())
                 .build();
         setSupportActionBar(toolbar);
+        discoverHost = new DiscoverHost(activity);
         searchDeviceFragment = SearchDeviceFragment.newInstance();
         switch2Fragment(searchDeviceFragment);
+        permissionManager = new PermissionManager(activity);
+        firebaseManager = new FirebaseManager(activity, new FirebaseManager.Callbacks() {
+
+            @Override
+            public void onGoogleLoginSuccessful(GoogleSignInAccount account) {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + firebaseManager.getUser().getDisplayName(), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+
+            @Override
+            public void onGoogleLoginFailed() {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+
+            @Override
+            public void onPlayGamesLoginSuccessful(GoogleSignInAccount account) {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + firebaseManager.getUser().getDisplayName(), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+
+            @Override
+            public void onPlayGamesLoginFailed() {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+
+            @Override
+            public void onAnonymouslyLoginSuccessful() {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sign_in_guest), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+
+            @Override
+            public void onAnonymouslyLoginFailed() {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+
+            @Override
+            public void onSignOut() {
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sing_out), Snackbar.LENGTH_LONG);
+                showSnackbar(snackbar);
+            }
+        });
 
         revealButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -201,7 +196,22 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                new ChooserDialog(MainActivity.this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog)
+                        .withChosenListener(new ChooserDialog.Result() {
+                            @Override
+                            public void onChoosePath(String path, File pathFile) {
+                                Log.e("Path", path);
+                                Log.e("File", pathFile.getName());
+                            }
+                        })
+                        // to handle the back key pressed or clicked outside the dialog:
+                        .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                            public void onCancel(DialogInterface dialog) {
+                                dialog.cancel();
+                            }
+                        })
+                        .build()
+                        .show();
             }
         });
 
@@ -242,8 +252,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         });
 
         final Spanned markdown = markwon.toMarkdown("**Hello there!**<br><a href=\"google.com\">Google</a>");
-
-
         helpIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -273,67 +281,15 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             }
         });
 
-        permissionCheck(new String[]{
+        permissionManager.permissionCheck(new String[]{
                 Manifest.permission.ACCESS_FINE_LOCATION,
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
         }, new int[]{
-                LOCATION_PERMISSION_CODE,
-                STORAGE_READ_PERMISSION_CODE,
-                STORAGE_WRITE_PERMISSION_CODE
+                PermissionManager.LOCATION_PERMISSION_CODE,
+                PermissionManager.STORAGE_READ_PERMISSION_CODE,
+                PermissionManager.STORAGE_WRITE_PERMISSION_CODE
         });
-    }
-
-    private void permissionCheck(@NotNull String[] permissions, final int[] permissionCodes) {
-        for (int i = 0; i < permissions.length; i++) {
-            final String permission = permissions[i];
-            final int permissionCode = permissionCodes[i];
-
-            if (ContextCompat.checkSelfPermission(activity, permission) != PackageManager.PERMISSION_GRANTED) {
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity);
-
-                switch (permission) {
-                    case Manifest.permission.ACCESS_FINE_LOCATION:
-                        builder.setTitle(getString(R.string.location));
-                        builder.setMessage(getString(R.string.location_needed));
-
-                        break;
-                    case Manifest.permission.READ_EXTERNAL_STORAGE:
-                        builder.setTitle("Read Storage");
-                        builder.setMessage("This permission is needed to send and receive files and folders");
-                        break;
-                    case Manifest.permission.WRITE_EXTERNAL_STORAGE:
-                        builder.setTitle("Write Storage");
-                        builder.setMessage("This permission is needed to send and receive files and folders");
-                        break;
-                }
-
-                builder.setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ActivityCompat.requestPermissions(activity, new String[]{permission}, permissionCode);
-                    }
-                });
-                builder.setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        dialog.dismiss();
-                    }
-                });
-                builder.create().show();
-            } else {
-                ActivityCompat.requestPermissions(activity, new String[]{permission}, permissionCodes[i]);
-            }
-        }
-    }
-
-    private void switch2Fragment(Fragment fragment) {
-        FragmentManager fragmentManager = this.getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
-        fragmentTransaction.replace(R.id.fragment_view, fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
     }
 
     private void infoReveal(@NotNull View targetView, int startPointX, int startPointY, long duration, final boolean isReverse) {
@@ -406,44 +362,21 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         animator.start();
     }
 
-    @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-
-        switch (requestCode) {
-            case LOCATION_PERMISSION_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // enable P2P
-                }
-                break;
-            case STORAGE_READ_PERMISSION_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // read storage
-                }
-                break;
-            case STORAGE_WRITE_PERMISSION_CODE:
-                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    // write storage
-                }
-                break;
-        }
-    }
-
     private void switchSettings(int selected) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
                 .setTitle(settingsArray[selected]);
 
         switch (selected) {
             case 0:
-                if (mUser != null) {
+                if (firebaseManager.getUser() != null) {
                     builder.setTitle("Logged in");
-                    String userName = (mUser.getDisplayName() != null) ? mUser.getDisplayName() : "Guest";
+                    String userName = (firebaseManager.getUser().getDisplayName() != null) ? firebaseManager.getUser().getDisplayName() : "Guest";
                     builder.setMessage("Welcome, " + userName);
                     builder.setPositiveButton(getString(R.string.close), null);
                     builder.setNeutralButton("Log out", new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
-                            signOut();
+                            firebaseManager.signOut();
                         }
                     });
                     break;
@@ -451,7 +384,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                 builder.setItems(signInArray, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        signIn(which);
+                        firebaseManager.signIn(selected);
                     }
                 });
                 builder.setPositiveButton(getString(R.string.close), null);
@@ -487,13 +420,13 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                     public void onClick(DialogInterface dialog, int which) {
                         switch (which) {
                             case 0:
-                                permissionCheck(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, new int[]{LOCATION_PERMISSION_CODE});
+                                permissionManager.permissionCheck(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, new int[]{PermissionManager.LOCATION_PERMISSION_CODE});
                                 break;
                             case 1:
-                                permissionCheck(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, new int[]{STORAGE_READ_PERMISSION_CODE});
+                                permissionManager.permissionCheck(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, new int[]{PermissionManager.STORAGE_READ_PERMISSION_CODE});
                                 break;
                             case 2:
-                                permissionCheck(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new int[]{STORAGE_WRITE_PERMISSION_CODE});
+                                permissionManager.permissionCheck(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new int[]{PermissionManager.STORAGE_WRITE_PERMISSION_CODE});
                                 break;
                         }
                     }
@@ -505,124 +438,16 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         builder.create().show();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        Task<GoogleSignInAccount> task = GoogleSignIn.getSignedInAccountFromIntent(data);
-        switch (requestCode) {
-            case RC_SIGN_IN:
-                try {
-                    GoogleSignInAccount account = task.getResult(ApiException.class);
-                    firebaseAuthWithGoogle(account);
-                } catch (ApiException ignored) {}
-                break;
-
-            case GAMES_SIGN_IN:
-                try {
-                    GoogleSignInAccount account = task.getResult(ApiException.class);
-                    firebaseAuthWithPlayGames(account);
-                } catch (ApiException ignored) {}
-                break;
-        }
-    }
-
-    private void firebaseAuthWithGoogle(@NotNull GoogleSignInAccount acct) {
-        AuthCredential credential = GoogleAuthProvider.getCredential(acct.getIdToken(), null);
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            mUser = mAuth.getCurrentUser();
-                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + mUser.getDisplayName(), Snackbar.LENGTH_LONG);
-                            showSnackbar(snackbar);
-                        } else {
-                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                            showSnackbar(snackbar);
-                        }
-                    }
-                });
-    }
-
-    private void firebaseAuthWithPlayGames(@NotNull GoogleSignInAccount acct) {
-        AuthCredential credential = PlayGamesAuthProvider.getCredential(acct.getServerAuthCode());
-        mAuth.signInWithCredential(credential)
-                .addOnCompleteListener(activity, new OnCompleteListener<AuthResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<AuthResult> task) {
-                        if (task.isSuccessful()) {
-                            mUser = mAuth.getCurrentUser();
-                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + mUser.getDisplayName(), Snackbar.LENGTH_LONG);
-                            showSnackbar(snackbar);
-                        } else {
-                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                            showSnackbar(snackbar);
-                        }
-                    }
-                });
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        mUser = mAuth.getCurrentUser();
-    }
-
-    private void signIn(int selected) {
-        switch (selected) {
-            case 0:
-                Intent signInIntent = mGoogleSignInClient.getSignInIntent();
-                startActivityForResult(signInIntent, RC_SIGN_IN);
-                break;
-
-            case 1:
-                Intent signInGames = mGoogleSignInClient.getSignInIntent();
-                startActivityForResult(signInGames, GAMES_SIGN_IN);
-                break;
-
-            case 2:
-                mAuth.signInAnonymously()
-                        .addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    mUser = mAuth.getCurrentUser();
-                                    Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sign_in_guest), Snackbar.LENGTH_LONG);
-                                    showSnackbar(snackbar);
-                                } else {
-                                    Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                                    showSnackbar(snackbar);
-                                }
-                            }
-                        });
-                break;
-        }
-    }
-
-    private void signOut() {
-        mAuth.signOut();
-        mGoogleSignInClient.signOut().addOnCompleteListener(activity,
-                new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sing_out), Snackbar.LENGTH_LONG);
-                            showSnackbar(snackbar);
-                        }
-                        if (mUser.isAnonymous()) {
-                            mUser.delete();
-                        }
-                        mUser = null;
-                    }
-                });
-    }
-
     public void showSnackbar(@NotNull Snackbar snackbar) {
         final View snackBarView = snackbar.getView();
         final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackBarView.getLayoutParams();
         final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
 
-        snackBarText.setGravity(Gravity.CENTER);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+            snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        } else {
+            snackBarText.setGravity(Gravity.CENTER_HORIZONTAL);
+        }
         snackBarText.setTypeface(snackBarText.getTypeface(), Typeface.BOLD);
 
         params.setMargins(params.leftMargin + (int) getResources().getDimension(R.dimen.snackbar_margin),
@@ -634,173 +459,61 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         snackbar.show();
     }
 
-    @Contract(value = " -> new", pure = true)
-    @NonNull
-    private NearDiscovery.Listener getNearDiscoveryListener() {
-        return new NearDiscovery.Listener() {
-            @Override
-            public void onPeersUpdate(Set<Host> hosts) {
-                for (Host host : hosts) {
-                    if (!host.getName().contains(getPackageName())) {
-                        hosts.remove(host);
-                    }
-                }
-
-                if (hosts.size() > 0) {
-                    if (chooseDeviceFragment == null) {
-                        chooseDeviceFragment = new ChooseDeviceFragment(hosts);
-                    } else {
-                        chooseDeviceFragment.setHosts(hosts);
-                    }
-                    switch2Fragment(chooseDeviceFragment);
-                } else {
-                    switch2Fragment(searchDeviceFragment);
-                    if (mNearDiscovery.isDiscovering()) {
-                        searchDeviceFragment.setSearch(true);
-                    }
-                }
-            }
-
-            @Override
-            public void onDiscoveryTimeout() {
-                stopDiscovery();
-                searchDeviceFragment.setSearch(false);
-            }
-
-            @Override
-            public void onDiscoveryFailure(Throwable e) {
-                stopDiscovery();
-                searchDeviceFragment.setSearch(false);
-            }
-
-            @Override
-            public void onDiscoverableTimeout() {
-                stopDiscovery();
-                searchDeviceFragment.setSearch(false);
-            }
-        };
+    public void setSearching(boolean searching) {
+        searchDeviceFragment.setSearch(searching);
     }
 
-    @Contract(value = " -> new", pure = true)
-    @NonNull
-    private NearConnect.Listener getNearConnectListener() {
-        return new NearConnect.Listener() {
-            @Override
-            public void onReceive(byte[] bytes, final Host sender) {
-                if (bytes != null) {
-                    switch (new String(bytes)) {
-                        case MESSAGE_REQUEST_START_TRANSFER:
-                        case MESSAGE_RESPONSE_ACCEPT_REQUEST:
-                        case MESSAGE_RESPONSE_DECLINE_REQUEST:
-                            startHostTransfer(sender, bytes);
-                            break;
-
-                        default:
-                            // TODO: file transfer
-                            break;
-                    }
-                }
-            }
-
-            @Override
-            public void onSendComplete(long jobId) {
-                // jobId is the same as the return value of NearConnect.send(), an approximate epoch time of the send
-            }
-
-            @Override
-            public void onSendFailure(Throwable e, long jobId) {
-                // handle failed sends here
-            }
-
-            @Override
-            public void onStartListenFailure(Throwable e) {
-                // This tells that the NearConnect.startReceiving() didn't go through properly.
-                // Common cause would be that another instance of NearConnect is already listening and it's NearConnect.stopReceiving() needs to be called first
-            }
-        };
-    }
-
-    private void startDiscovery() {
-        EasyDeviceMod easyDeviceMod = new EasyDeviceMod(activity);
-        if (!mNearDiscovery.isDiscovering()) {
-            mNearDiscovery.makeDiscoverable(easyDeviceMod.getDeviceType(activity) + getPackageName() + "_" + Build.MODEL);
-            if (!mNearConnect.isReceiving()) {
-                mNearConnect.startReceiving();
-            }
-
-            mNearDiscovery.startDiscovery();
-        }
-    }
-
-    private void stopDiscovery() {
-        if (mNearDiscovery.isDiscovering()) {
-            mNearDiscovery.makeNonDiscoverable();
-            mNearDiscovery.stopDiscovery();
-        }
-        if (mNearConnect.isReceiving()) {
-            mNearConnect.stopReceiving(false);
-            searchDeviceFragment.setSearch(false);
-        }
-    }
-
-    private void startHostTransfer(@NotNull final Host sender, byte[] bytes) {
-        String senderName = sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
-
-        switch (new String(bytes)) {
-            case MESSAGE_REQUEST_START_TRANSFER:
-                new MaterialAlertDialogBuilder(activity)
-                        .setMessage(senderName + getString(R.string.want2connect))
-                        .setPositiveButton(getString(R.string.start), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mNearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
-                            }
-                        })
-                        .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                mNearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
-                            }
-                        }).create().show();
-                break;
-            case MESSAGE_RESPONSE_DECLINE_REQUEST:
-                new MaterialAlertDialogBuilder(activity)
-                        .setMessage(senderName + getString(R.string.is_busy))
-                        .setNeutralButton(getString(R.string.okay), null).create().show();
-                break;
-            case MESSAGE_RESPONSE_ACCEPT_REQUEST:
-                // TODO: start fragment with file transfer
-                new MaterialAlertDialogBuilder(activity)
-                        .setMessage("Client accepted request")
-                        .setPositiveButton(getString(R.string.okay), null)
-                        .create().show();
-                break;
-        }
+    public void switch2Fragment(Fragment fragment) {
+        FragmentManager fragmentManager = this.getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out);
+        fragmentTransaction.replace(R.id.fragment_view, fragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     @Override
     public void onSearchFragmentInteraction(boolean search) {
         if (search) {
-            startDiscovery();
+            discoverHost.startDiscovery();
         } else {
-            stopDiscovery();
+            discoverHost.stopDiscovery();
+        }
+    }
+
+    @Override
+    public void onChooseFragmentInteraction(Host host) {
+        discoverHost.send(host, DiscoverHost.MESSAGE_REQUEST_START_TRANSFER.getBytes());
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (firebaseManager != null) {
+            firebaseManager.setUser(firebaseManager.getAuth().getCurrentUser());
         }
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        stopDiscovery();
+        discoverHost.stopDiscovery();
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        stopDiscovery();
+        discoverHost.stopDiscovery();
     }
 
     @Override
-    public void onChooseFragmentInteraction(Host host) {
-        mNearConnect.send(MESSAGE_REQUEST_START_TRANSFER.getBytes(), host);
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        firebaseManager.onActivityResult(requestCode, data);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 }

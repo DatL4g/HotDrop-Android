@@ -2,9 +2,7 @@ package de.datlag.hotdrop.utils;
 
 import android.app.Activity;
 import android.content.ContentResolver;
-
 import android.net.Uri;
-import android.util.Log;
 import android.webkit.MimeTypeMap;
 
 import org.jetbrains.annotations.NotNull;

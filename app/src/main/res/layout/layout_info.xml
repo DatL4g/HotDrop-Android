@@ -21,7 +21,7 @@
         android:focusable="true"
         android:background="@drawable/info_layout_icon_selector"/>
 
-    <LinearLayout
+    <androidx.appcompat.widget.LinearLayoutCompat
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
@@ -47,7 +47,7 @@
             app:autoSizeTextType="uniform"
             app:autoSizeMaxTextSize="20sp"/>
 
-        <LinearLayout
+        <androidx.appcompat.widget.LinearLayoutCompat
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center"
@@ -96,6 +96,6 @@
                 android:focusable="true"
                 android:background="@drawable/info_layout_icon_selector"/>
 
-        </LinearLayout>
-    </LinearLayout>
+        </androidx.appcompat.widget.LinearLayoutCompat>
+    </androidx.appcompat.widget.LinearLayoutCompat>
 </FrameLayout>
