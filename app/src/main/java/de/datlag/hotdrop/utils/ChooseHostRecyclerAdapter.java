@@ -4,7 +4,10 @@ import android.app.Activity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
+
 import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.adroitandroid.near.model.Host;
@@ -61,6 +64,15 @@ public class ChooseHostRecyclerAdapter extends RecyclerView.Adapter<ChooseHostRe
         }
         String deviceUserName = hostName.substring(hostName.indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
         holder.deviceName.setText(deviceUserName);
+
+        holder.deviceContainer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    holder.deviceFAB.requestFocus();
+                }
+            }
+        });
     }
 
 
@@ -71,14 +83,17 @@ public class ChooseHostRecyclerAdapter extends RecyclerView.Adapter<ChooseHostRe
 
 
     public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+        LinearLayoutCompat deviceContainer;
         FloatingActionButton deviceFAB;
         AppCompatTextView deviceName;
 
         ViewHolder(View itemView) {
             super(itemView);
+            deviceContainer = itemView.findViewById(R.id.device_container);
             deviceFAB = itemView.findViewById(R.id.fab_device);
             deviceName = itemView.findViewById(R.id.device_name);
             itemView.setOnClickListener(this);
+            deviceFAB.setOnClickListener(this);
         }
 
         @Override

@@ -58,11 +58,12 @@ public class SearchDeviceFragment extends Fragment {
         } else {
             rotateAnimation.cancel();
             rotateAnimation.reset();
+            searchFAB.clearAnimation();
         }
     }
 
     @Override
-    public void onAttach(Context context) {
+    public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
             mListener = (OnFragmentInteractionListener) context;
