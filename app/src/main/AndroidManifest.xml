@@ -61,6 +61,9 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
+        <service
+            android:exported="false"
+            android:name="com.novoda.merlin.MerlinService" />
     </application>
 
 </manifest>

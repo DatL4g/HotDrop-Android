@@ -1,12 +1,10 @@
 package de.datlag.hotdrop;
 
 import android.Manifest;
-import android.animation.Animator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
@@ -15,7 +13,6 @@ import android.text.Spanned;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 
@@ -26,7 +23,6 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -34,22 +30,26 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.adroitandroid.near.model.Host;
 import com.bumptech.glide.Glide;
-import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.auth.AuthResult;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import de.datlag.hotdrop.utils.DiscoverHost;
-import de.datlag.hotdrop.utils.FirebaseManager;
+import de.datlag.hotdrop.utils.InfoPageManager;
 import de.datlag.hotdrop.utils.PermissionManager;
-import io.codetail.animation.ViewAnimationUtils;
+import de.datlag.hotdrop.utils.SettingsManager;
+import de.interaapps.firebasemanager.auth.AnonymousAuth;
+import de.interaapps.firebasemanager.auth.GoogleAuth;
+import de.interaapps.firebasemanager.auth.PlayGamesAuth;
+import de.interaapps.firebasemanager.core.FirebaseManager;
+import de.interaapps.firebasemanager.core.auth.Auth;
 import io.codetail.widget.RevealFrameLayout;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import io.noties.markwon.Markwon;
@@ -66,7 +66,8 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private CoordinatorLayout coordinatorLayout;
     private AppBarLayout appBarLayout;
     private Toolbar toolbar;
-    private FloatingActionButton fab;
+    private FloatingActionButton fabUpload;
+    private FloatingActionButton fabDownload;
     private AppCompatImageView backgroundImage;
     private AppCompatImageView tuneButton;
     private AppCompatImageView revealButton;
@@ -77,13 +78,16 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private AppCompatImageView githubIcon;
     private AppCompatImageView codeIcon;
     private AppCompatImageView helpIcon;
+    private InfoPageManager infoPageManager;
 
     private Markwon markwon;
-    private String[] settingsArray;
-    private String[] signInArray;
 
+    private SettingsManager settingsManager;
     private PermissionManager permissionManager;
     private FirebaseManager firebaseManager;
+    private GoogleAuth googleAuth;
+    private PlayGamesAuth playGamesAuth;
+    private AnonymousAuth anonymousAuth;
 
     private DiscoverHost discoverHost;
     public SearchDeviceFragment searchDeviceFragment;
@@ -106,7 +110,8 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         coordinatorLayout = findViewById(R.id.coordinator);
         appBarLayout = findViewById(R.id.app_bar);
         toolbar = findViewById(R.id.toolbar);
-        fab = findViewById(R.id.fab);
+        fabUpload = findViewById(R.id.fab_upload);
+        fabDownload = findViewById(R.id.fab_download);
         backgroundImage = findViewById(R.id.background_image);
         tuneButton = findViewById(R.id.tune_button);
         revealButton = findViewById(R.id.reveal_button);
@@ -122,113 +127,108 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private void initializeLogic() {
         activity = MainActivity.this;
         Glide.with(activity).load(ContextCompat.getDrawable(activity, R.drawable.circles)).centerCrop().into(backgroundImage);
-        settingsArray = getResources().getStringArray(R.array.available_settings);
-        signInArray = getResources().getStringArray(R.array.sign_in_options);
 
         markwon = Markwon.builder(activity)
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(HtmlPlugin.create())
                 .build();
         setSupportActionBar(toolbar);
+
         discoverHost = new DiscoverHost(activity);
         searchDeviceFragment = SearchDeviceFragment.newInstance();
         switch2Fragment(searchDeviceFragment);
         permissionManager = new PermissionManager(activity);
-        firebaseManager = new FirebaseManager(activity, new FirebaseManager.Callbacks() {
 
+        firebaseManager = new FirebaseManager(activity);
+        googleAuth = new GoogleAuth(activity, getString(R.string.default_web_client_id));
+        playGamesAuth = new PlayGamesAuth(activity, getString(R.string.default_web_client_id));
+        anonymousAuth = new AnonymousAuth(activity);
+        firebaseManager.addLogin(googleAuth);
+        firebaseManager.addLogin(playGamesAuth);
+        firebaseManager.addLogin(anonymousAuth);
+        settingsManager = new SettingsManager(activity, firebaseManager, permissionManager, new SettingsManager.LoginCallbacks() {
             @Override
-            public void onGoogleLoginSuccessful(GoogleSignInAccount account) {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + firebaseManager.getUser().getDisplayName(), Snackbar.LENGTH_LONG);
+            public void onLoginSuccessful(AuthResult authResult) {
+                String loginName = null;
+                if (authResult.getUser() != null) {
+                    loginName = (authResult.getUser().isAnonymous()) ? "Guest" : authResult.getUser().getDisplayName();
+                }
+
+                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + loginName, Snackbar.LENGTH_LONG);
                 showSnackbar(snackbar);
             }
 
             @Override
-            public void onGoogleLoginFailed() {
+            public void onLoginFailed() {
                 Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-
-            @Override
-            public void onPlayGamesLoginSuccessful(GoogleSignInAccount account) {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + firebaseManager.getUser().getDisplayName(), Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-
-            @Override
-            public void onPlayGamesLoginFailed() {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-
-            @Override
-            public void onAnonymouslyLoginSuccessful() {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sign_in_guest), Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-
-            @Override
-            public void onAnonymouslyLoginFailed() {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-
-            @Override
-            public void onSignOut() {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.sing_out), Snackbar.LENGTH_LONG);
                 showSnackbar(snackbar);
             }
         });
 
+        infoPageManager = new InfoPageManager();
+        infoPageManager.setLayouts(mainLayout, infoLayout, appBarLayout, toolbar, getSupportActionBar());
+
         revealButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                infoReveal(infoLayout, mainLayout.getRight(), 0, 1000, false);
+                infoPageManager.startAnimation(false);
             }
         });
 
         reverseRevealButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                infoReveal(infoLayout, mainLayout.getRight(), 0, 1000, true);
+                infoPageManager.startAnimation(true);
             }
         });
 
-        fab.setOnClickListener(new View.OnClickListener() {
+        fabUpload.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new ChooserDialog(MainActivity.this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog)
-                        .withChosenListener(new ChooserDialog.Result() {
-                            @Override
-                            public void onChoosePath(String path, File pathFile) {
-                                Log.e("Path", path);
-                                Log.e("File", pathFile.getName());
-                            }
-                        })
-                        // to handle the back key pressed or clicked outside the dialog:
-                        .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                            public void onCancel(DialogInterface dialog) {
-                                dialog.cancel();
-                            }
-                        })
-                        .build()
-                        .show();
+                boolean isLoggedIn = false;
+                for (Auth auth : firebaseManager.getLogin().toArray(new Auth[0])) {
+                    isLoggedIn = auth.getUser() != null;
+                }
+
+                if (!isLoggedIn) {
+                    new MaterialAlertDialogBuilder(activity)
+                            .setTitle("Account")
+                            .setMessage("You must be logged in to use this feature!\nIf you don't want to create an account you can sign in anonymously, but your files are less secure!")
+                            .setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+                                    chooseFile(new FileChooseCallback() {
+                                        @Override
+                                        public void onChosen(String path, File file) {
+                                            Log.e("Path", path);
+                                            Log.e("File", file.getName());
+                                        }
+                                    });
+                                }
+                            })
+                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialogInterface, int i) {
+
+                                }
+                            })
+                            .create().show();
+                } else {
+                    chooseFile(new FileChooseCallback() {
+                        @Override
+                        public void onChosen(String path, File file) {
+                            Log.e("Path", path);
+                            Log.e("File", file.getName());
+                        }
+                    });
+                }
             }
         });
 
         tuneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new MaterialAlertDialogBuilder(activity)
-                        .setTitle(getString(R.string.settings))
-                        .setItems(settingsArray, new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                dialog.dismiss();
-                                switchSettings(which);
-                            }
-                        })
-                        .setPositiveButton(getString(R.string.close), null)
-                        .show();
+                settingsManager.open();
             }
         });
 
@@ -292,151 +292,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         });
     }
 
-    private void infoReveal(@NotNull View targetView, int startPointX, int startPointY, long duration, final boolean isReverse) {
-        if (isReverse) {
-            targetView.setVisibility(View.VISIBLE);
-            mainLayout.setVisibility(View.GONE);
-        } else {
-            targetView.setVisibility(View.GONE);
-            mainLayout.setVisibility(View.VISIBLE);
-        }
-
-        int dx = Math.max(startPointX, targetView.getWidth() - startPointX);
-        int dy = Math.max(startPointY, targetView.getHeight() - startPointY);
-        float finalRadius = (float) Math.hypot(dx, dy);
-        Animator animator;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            if (isReverse) {
-                animator = android.view.ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, finalRadius, 0);
-            } else {
-                animator = android.view.ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, 0, finalRadius);
-            }
-        } else {
-            if (isReverse) {
-                animator = ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, finalRadius, 0);
-            } else {
-                animator = ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, 0, finalRadius);
-            }
-        }
-
-        animator.setInterpolator(new AccelerateDecelerateInterpolator());
-        animator.setDuration(duration);
-        animator.addListener(new Animator.AnimatorListener() {
-            @Override
-            public void onAnimationStart(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationEnd(Animator animation) {
-                if (!isReverse) {
-                    mainLayout.setVisibility(View.GONE);
-                }
-            }
-
-            @Override
-            public void onAnimationCancel(Animator animation) {
-            }
-
-            @Override
-            public void onAnimationRepeat(Animator animation) {
-            }
-        });
-
-        if (isReverse) {
-            targetView.setVisibility(View.GONE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                appBarLayout.setElevation(8);
-            } else {
-                getSupportActionBar().setElevation(8);
-            }
-            mainLayout.setVisibility(View.VISIBLE);
-        } else {
-            targetView.setVisibility(View.VISIBLE);
-            getSupportActionBar().setElevation(0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                appBarLayout.setElevation(0);
-                toolbar.setElevation(0);
-            }
-        }
-        animator.start();
-    }
-
-    private void switchSettings(int selected) {
-        MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
-                .setTitle(settingsArray[selected]);
-
-        switch (selected) {
-            case 0:
-                if (firebaseManager.getUser() != null) {
-                    builder.setTitle("Logged in");
-                    String userName = (firebaseManager.getUser().getDisplayName() != null) ? firebaseManager.getUser().getDisplayName() : "Guest";
-                    builder.setMessage("Welcome, " + userName);
-                    builder.setPositiveButton(getString(R.string.close), null);
-                    builder.setNeutralButton("Log out", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            firebaseManager.signOut();
-                        }
-                    });
-                    break;
-                }
-                builder.setItems(signInArray, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        firebaseManager.signIn(selected);
-                    }
-                });
-                builder.setPositiveButton(getString(R.string.close), null);
-                break;
-            case 1:
-                builder.setMessage("Test: selected " + selected);
-                break;
-            case 2:
-                ArrayList<String> statusList = new ArrayList<>();
-
-                if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                    statusList.add("Location: Granted");
-                } else {
-                    statusList.add("Location: Denied");
-                }
-
-                if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    statusList.add("Read Storage: Granted");
-                } else {
-                    statusList.add("Read Storage: Denied");
-                }
-
-                if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    statusList.add("Write Storage: Granted");
-                } else {
-                    statusList.add("Write Storage: Denied");
-                }
-
-                String[] status = statusList.toArray(new String[0]);
-
-                builder.setItems(status, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        switch (which) {
-                            case 0:
-                                permissionManager.permissionCheck(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, new int[]{PermissionManager.LOCATION_PERMISSION_CODE});
-                                break;
-                            case 1:
-                                permissionManager.permissionCheck(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, new int[]{PermissionManager.STORAGE_READ_PERMISSION_CODE});
-                                break;
-                            case 2:
-                                permissionManager.permissionCheck(new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, new int[]{PermissionManager.STORAGE_WRITE_PERMISSION_CODE});
-                                break;
-                        }
-                    }
-                });
-                builder.setPositiveButton(getString(R.string.close), null);
-                break;
-        }
-
-        builder.create().show();
-    }
 
     public void showSnackbar(@NotNull Snackbar snackbar) {
         final View snackBarView = snackbar.getView();
@@ -472,6 +327,28 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         fragmentTransaction.commit();
     }
 
+    public void chooseFile(FileChooseCallback fileChooseCallback) {
+        new ChooserDialog(MainActivity.this, R.style.FileChooserStyle)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String path, File pathFile) {
+                        fileChooseCallback.onChosen(path, pathFile);
+                    }
+                })
+                // to handle the back key pressed or clicked outside the dialog:
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.cancel();
+                    }
+                })
+                .build()
+                .show();
+    }
+
+    public interface FileChooseCallback {
+        void onChosen(String path, File file);
+    }
+
     @Override
     public void onSearchFragmentInteraction(boolean search) {
         if (search) {
@@ -490,7 +367,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     protected void onStart() {
         super.onStart();
         if (firebaseManager != null) {
-            firebaseManager.setUser(firebaseManager.getAuth().getCurrentUser());
+            firebaseManager.onStart();
         }
     }
 
@@ -507,9 +384,20 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     }
 
     @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        firebaseManager.onActivityResult(requestCode, data);
+        googleAuth.onActivityResult(requestCode, resultCode, data);
+        playGamesAuth.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

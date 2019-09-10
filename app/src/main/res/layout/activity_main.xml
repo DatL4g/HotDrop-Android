@@ -102,16 +102,35 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
+                <androidx.appcompat.widget.LinearLayoutCompat
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_gravity="end|bottom"
+                    android:layout_margin="8dp">
+
                 <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:layout_width="?attr/actionBarSize"
                     android:layout_height="?attr/actionBarSize"
-                    android:id="@+id/fab"
+                    android:id="@+id/fab_upload"
                     android:layout_gravity="end|bottom"
-                    android:layout_margin="16dp"
+                    android:layout_margin="8dp"
                     app:backgroundTint="@color/primaryColor"
                     app:rippleColor="@color/primaryDarkColor"
                     app:srcCompat="@drawable/ic_cloud_upload_white_24dp"
-                    app:tint="@android:color/white"/>
+                    app:tint="@android:color/white" />
+
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
+                    android:layout_width="?attr/actionBarSize"
+                    android:layout_height="?attr/actionBarSize"
+                    android:id="@+id/fab_download"
+                    android:layout_gravity="end|bottom"
+                    android:layout_margin="8dp"
+                    app:backgroundTint="@color/primaryColor"
+                    app:rippleColor="@color/primaryDarkColor"
+                    app:srcCompat="@drawable/ic_cloud_download_white_24dp"
+                    app:tint="@android:color/white" />
+                </androidx.appcompat.widget.LinearLayoutCompat>
             </FrameLayout>
 
             <include
