@@ -3,12 +3,16 @@ package de.datlag.hotdrop.utils;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.net.Uri;
+import android.util.Base64;
 import android.webkit.MimeTypeMap;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URLConnection;
@@ -49,5 +53,28 @@ public class FileUtil {
             }
         }
         return mimeType;
+    }
+
+    public static String toBase64String(@NotNull File file) {
+        byte[] bytes = new byte[(int) file.length()];
+        try {
+            BufferedInputStream buf = new BufferedInputStream(new FileInputStream(file));
+            buf.read(bytes, 0, bytes.length);
+            buf.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
+    }
+
+    public static String toBase64String(@NotNull byte[] bytes) {
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
+    }
+
+    public static byte[] base64ToBytes(String base64String) {
+        return Base64.decode(base64String, Base64.DEFAULT);
     }
 }

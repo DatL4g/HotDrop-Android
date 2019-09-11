@@ -59,7 +59,7 @@ public class SettingsManager {
                 .show();
     }
 
-    private void switchSettings(int selected) {
+    public void switchSettings(int selected) {
         MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(activity)
                 .setTitle(settingsArray[selected]);
 

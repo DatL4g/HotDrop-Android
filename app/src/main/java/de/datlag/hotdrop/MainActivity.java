@@ -5,16 +5,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.FileUtils;
 import android.text.Spanned;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.webkit.MimeTypeMap;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -24,6 +29,7 @@ import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.ViewCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -32,17 +38,32 @@ import com.adroitandroid.near.model.Host;
 import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+import com.leinardi.android.speeddial.SpeedDialActionItem;
+import com.leinardi.android.speeddial.SpeedDialView;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import org.jetbrains.annotations.NotNull;
+import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 
 import de.datlag.hotdrop.utils.DiscoverHost;
+import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.InfoPageManager;
+import de.datlag.hotdrop.utils.MimeTypes;
 import de.datlag.hotdrop.utils.PermissionManager;
 import de.datlag.hotdrop.utils.SettingsManager;
 import de.interaapps.firebasemanager.auth.AnonymousAuth;
@@ -66,8 +87,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private CoordinatorLayout coordinatorLayout;
     private AppBarLayout appBarLayout;
     private Toolbar toolbar;
-    private FloatingActionButton fabUpload;
-    private FloatingActionButton fabDownload;
+    private SpeedDialView speedDialView;
     private AppCompatImageView backgroundImage;
     private AppCompatImageView tuneButton;
     private AppCompatImageView revealButton;
@@ -81,6 +101,9 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private InfoPageManager infoPageManager;
 
     private Markwon markwon;
+    private static final int downloadID = ViewCompat.generateViewId();
+    private static final int uploadID = ViewCompat.generateViewId();
+    private ArrayList<SpeedDialActionItem> menuItems = new ArrayList<>();
 
     private SettingsManager settingsManager;
     private PermissionManager permissionManager;
@@ -110,8 +133,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         coordinatorLayout = findViewById(R.id.coordinator);
         appBarLayout = findViewById(R.id.app_bar);
         toolbar = findViewById(R.id.toolbar);
-        fabUpload = findViewById(R.id.fab_upload);
-        fabDownload = findViewById(R.id.fab_download);
+        speedDialView = findViewById(R.id.speedDial);
         backgroundImage = findViewById(R.id.background_image);
         tuneButton = findViewById(R.id.tune_button);
         revealButton = findViewById(R.id.reveal_button);
@@ -127,6 +149,14 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private void initializeLogic() {
         activity = MainActivity.this;
         Glide.with(activity).load(ContextCompat.getDrawable(activity, R.drawable.circles)).centerCrop().into(backgroundImage);
+
+        menuItems.add(new SpeedDialActionItem.Builder(downloadID, R.drawable.ic_cloud_download_white_24dp)
+                .setFabImageTintColor(Color.WHITE)
+                .create());
+        menuItems.add(new SpeedDialActionItem.Builder(uploadID, R.drawable.ic_cloud_upload_white_24dp)
+                .setFabImageTintColor(Color.WHITE)
+                .create());
+        speedDialView.addAllActionItems(menuItems);
 
         markwon = Markwon.builder(activity)
                 .usePlugin(StrikethroughPlugin.create())
@@ -182,46 +212,16 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             }
         });
 
-        fabUpload.setOnClickListener(new View.OnClickListener() {
+        speedDialView.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
             @Override
-            public void onClick(View v) {
-                boolean isLoggedIn = false;
-                for (Auth auth : firebaseManager.getLogin().toArray(new Auth[0])) {
-                    isLoggedIn = auth.getUser() != null;
+            public boolean onActionSelected(SpeedDialActionItem actionItem) {
+                if (actionItem.getId() == uploadID) {
+                    uploadCloud();
+                } else if (actionItem.getId() == downloadID) {
+                    downloadCloud();
                 }
 
-                if (!isLoggedIn) {
-                    new MaterialAlertDialogBuilder(activity)
-                            .setTitle("Account")
-                            .setMessage("You must be logged in to use this feature!\nIf you don't want to create an account you can sign in anonymously, but your files are less secure!")
-                            .setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    chooseFile(new FileChooseCallback() {
-                                        @Override
-                                        public void onChosen(String path, File file) {
-                                            Log.e("Path", path);
-                                            Log.e("File", file.getName());
-                                        }
-                                    });
-                                }
-                            })
-                            .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-
-                                }
-                            })
-                            .create().show();
-                } else {
-                    chooseFile(new FileChooseCallback() {
-                        @Override
-                        public void onChosen(String path, File file) {
-                            Log.e("Path", path);
-                            Log.e("File", file.getName());
-                        }
-                    });
-                }
+                return false;
             }
         });
 
@@ -347,6 +347,60 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
     public interface FileChooseCallback {
         void onChosen(String path, File file);
+    }
+
+    private void uploadCloud() {
+        boolean isLoggedIn = false;
+        for (Auth auth : firebaseManager.getLogin().toArray(new Auth[0])) {
+            isLoggedIn = auth.getUser() != null;
+        }
+
+        if (!isLoggedIn) {
+            new MaterialAlertDialogBuilder(activity)
+                    .setTitle(getString(R.string.account))
+                    .setMessage(getString(R.string.upload_info))
+                    .setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            settingsManager.switchSettings(0);
+                        }
+                    })
+                    .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+
+                        }
+                    })
+                    .create().show();
+        } else {
+            chooseFile(new FileChooseCallback() {
+                @Override
+                public void onChosen(String path, File file) {
+                    if((int) file.length() > 0) {
+                        Log.e("Path", path);
+                        Log.e("File", file.getName());
+
+                        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
+
+                        JsonObject jsonObject = new JsonObject();
+                        jsonObject.addProperty("path", path);
+                        jsonObject.addProperty("name", file.getName());
+                        jsonObject.addProperty("mime", MimeTypes.getMimeType(extension));
+                        jsonObject.addProperty("extension", extension);
+                        jsonObject.addProperty("base64", FileUtil.toBase64String(file));
+
+                        Gson gson = new GsonBuilder().create();
+                        byte[] bytes = gson.toJson(jsonObject).getBytes();
+
+                        Log.e("GsonBytes", bytes.toString());
+                    }
+                }
+            });
+        }
+    }
+
+    private void downloadCloud() {
+
     }
 
     @Override

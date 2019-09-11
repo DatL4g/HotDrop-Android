@@ -102,35 +102,19 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
-                <androidx.appcompat.widget.LinearLayoutCompat
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:layout_gravity="end|bottom"
-                    android:layout_margin="8dp">
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="?attr/actionBarSize"
-                    android:layout_height="?attr/actionBarSize"
-                    android:id="@+id/fab_upload"
-                    android:layout_gravity="end|bottom"
-                    android:layout_margin="8dp"
-                    app:backgroundTint="@color/primaryColor"
-                    app:rippleColor="@color/primaryDarkColor"
-                    app:srcCompat="@drawable/ic_cloud_upload_white_24dp"
-                    app:tint="@android:color/white" />
-
-                <com.google.android.material.floatingactionbutton.FloatingActionButton
-                    android:layout_width="?attr/actionBarSize"
-                    android:layout_height="?attr/actionBarSize"
-                    android:id="@+id/fab_download"
-                    android:layout_gravity="end|bottom"
-                    android:layout_margin="8dp"
-                    app:backgroundTint="@color/primaryColor"
-                    app:rippleColor="@color/primaryDarkColor"
-                    app:srcCompat="@drawable/ic_cloud_download_white_24dp"
-                    app:tint="@android:color/white" />
-                </androidx.appcompat.widget.LinearLayoutCompat>
+                    <com.leinardi.android.speeddial.SpeedDialView
+                        android:id="@+id/speedDial"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        android:layout_margin="8dp"
+                        app:sdMainFabOpenedSrc="@drawable/ic_close_white_24dp"
+                        app:sdMainFabClosedSrc="@drawable/ic_cloud_white_24dp"
+                        app:sdExpansionMode="top"
+                        app:sdMainFabClosedBackgroundColor="@color/primaryColor"
+                        app:sdMainFabOpenedBackgroundColor="@color/primaryColor"
+                        app:sdMainFabClosedIconColor="@android:color/white"
+                        app:sdMainFabOpenedIconColor="@android:color/white" />
             </FrameLayout>
 
             <include
