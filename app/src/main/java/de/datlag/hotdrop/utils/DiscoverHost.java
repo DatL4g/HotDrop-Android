@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -11,7 +12,7 @@ import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
 import com.adroitandroid.near.model.Host;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.obsez.android.lib.filechooser.ChooserDialog;
+import com.google.gson.JsonObject;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -163,7 +164,16 @@ public class DiscoverHost {
                             break;
 
                         default:
-                            // TODO: file transfer
+                            JsonObject jsonObject = FileUtil.jsonObjectFromBytes(bytes);
+                            Log.e("Extension", jsonObject.get("extension").getAsString());
+                            new MaterialAlertDialogBuilder(activity)
+                                    .setTitle(jsonObject.get("name").getAsString())
+                                    .setMessage("Name: "+ jsonObject.get("name").getAsString()+ "\n" +
+                                            "Path: " + jsonObject.get("path").getAsString()+ "\n" +
+                                            "Extension: "+ jsonObject.get("extension").getAsString()+ "\n" +
+                                            "MimeType: "+ jsonObject.get("mime").getAsString())
+                            .setPositiveButton(activity.getString(R.string.okay), null)
+                            .create().show();
                             break;
                     }
                 }
@@ -214,20 +224,12 @@ public class DiscoverHost {
                 break;
             case MESSAGE_RESPONSE_ACCEPT_REQUEST:
                 // TODO: start fragment with file transfer
-                new ChooserDialog(activity, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog)
-                        .withChosenListener(new ChooserDialog.Result() {
-                            @Override
-                            public void onChoosePath(String path, File pathFile) {
-                            }
-                        })
-                        // to handle the back key pressed or clicked outside the dialog:
-                        .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                            public void onCancel(DialogInterface dialog) {
-                                dialog.cancel();
-                            }
-                        })
-                        .build()
-                        .show();
+                FileUtil.chooseFile(activity, new FileChooseCallback() {
+                    @Override
+                    public void onChosen(String path, File file) {
+                        send(sender, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(file)));
+                    }
+                });
                 break;
         }
     }

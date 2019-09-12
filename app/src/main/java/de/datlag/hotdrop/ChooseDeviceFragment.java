@@ -14,6 +14,8 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.adroitandroid.near.model.Host;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.Set;
 
 import de.datlag.hotdrop.utils.ChooseHostRecyclerAdapter;
@@ -36,7 +38,7 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_choose_device, container, false);
         initialize();

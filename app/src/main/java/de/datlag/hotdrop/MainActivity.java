@@ -10,16 +10,12 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.FileUtils;
 import android.text.Spanned;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
-import android.webkit.MimeTypeMap;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,30 +36,20 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 import de.datlag.hotdrop.utils.DiscoverHost;
+import de.datlag.hotdrop.utils.FileChooseCallback;
 import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.InfoPageManager;
-import de.datlag.hotdrop.utils.MimeTypes;
 import de.datlag.hotdrop.utils.PermissionManager;
 import de.datlag.hotdrop.utils.SettingsManager;
 import de.interaapps.firebasemanager.auth.AnonymousAuth;
@@ -181,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             public void onLoginSuccessful(AuthResult authResult) {
                 String loginName = null;
                 if (authResult.getUser() != null) {
-                    loginName = (authResult.getUser().isAnonymous()) ? "Guest" : authResult.getUser().getDisplayName();
+                    loginName = (authResult.getUser().isAnonymous()) ? getString(R.string.guest) : authResult.getUser().getDisplayName();
                 }
 
                 Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + loginName, Snackbar.LENGTH_LONG);
@@ -298,7 +284,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackBarView.getLayoutParams();
         final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
         } else {
             snackBarText.setGravity(Gravity.CENTER_HORIZONTAL);
@@ -327,28 +313,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         fragmentTransaction.commit();
     }
 
-    public void chooseFile(FileChooseCallback fileChooseCallback) {
-        new ChooserDialog(MainActivity.this, R.style.FileChooserStyle)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String path, File pathFile) {
-                        fileChooseCallback.onChosen(path, pathFile);
-                    }
-                })
-                // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
-                        dialog.cancel();
-                    }
-                })
-                .build()
-                .show();
-    }
-
-    public interface FileChooseCallback {
-        void onChosen(String path, File file);
-    }
-
     private void uploadCloud() {
         boolean isLoggedIn = false;
         for (Auth auth : firebaseManager.getLogin().toArray(new Auth[0])) {
@@ -373,27 +337,14 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                     })
                     .create().show();
         } else {
-            chooseFile(new FileChooseCallback() {
+            FileUtil.chooseFile(activity, new FileChooseCallback() {
                 @Override
                 public void onChosen(String path, File file) {
-                    if((int) file.length() > 0) {
-                        Log.e("Path", path);
-                        Log.e("File", file.getName());
+                    byte[] bytes = FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(file));
+                    JsonObject object = FileUtil.jsonObjectFromBytes(bytes);
 
-                        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
-
-                        JsonObject jsonObject = new JsonObject();
-                        jsonObject.addProperty("path", path);
-                        jsonObject.addProperty("name", file.getName());
-                        jsonObject.addProperty("mime", MimeTypes.getMimeType(extension));
-                        jsonObject.addProperty("extension", extension);
-                        jsonObject.addProperty("base64", FileUtil.toBase64String(file));
-
-                        Gson gson = new GsonBuilder().create();
-                        byte[] bytes = gson.toJson(jsonObject).getBytes();
-
-                        Log.e("GsonBytes", bytes.toString());
-                    }
+                    Log.e("Gson", object.toString());
+                    Log.e("Mime", object.get("mime").getAsString());
                 }
             });
         }

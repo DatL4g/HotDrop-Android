@@ -2,9 +2,14 @@ package de.datlag.hotdrop.utils;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.DialogInterface;
 import android.net.Uri;
 import android.util.Base64;
 import android.webkit.MimeTypeMap;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -21,7 +26,38 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Objects;
 
+import de.datlag.hotdrop.R;
+
 public class FileUtil {
+
+    public static void chooseFile(Activity activity, FileChooseCallback fileChooseCallback) {
+        new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String path, File pathFile) {
+                        fileChooseCallback.onChosen(path, pathFile);
+                    }
+                })
+                // to handle the back key pressed or clicked outside the dialog:
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.cancel();
+                    }
+                })
+                .build()
+                .show();
+    }
+
+    public static JsonObject jsonObjectFromFile(File file) {
+        String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
+        JsonObject jsonObject = new JsonObject();
+        jsonObject.addProperty("path", file.getAbsolutePath());
+        jsonObject.addProperty("name", file.getName());
+        jsonObject.addProperty("mime", MimeTypes.getMimeType(extension));
+        jsonObject.addProperty("extension", extension);
+        jsonObject.addProperty("base64", FileUtil.toBase64String(file));
+        return jsonObject;
+    }
 
     public static String getMimeType(byte[] bytes) {
         InputStream is = new BufferedInputStream(new ByteArrayInputStream(bytes));
@@ -76,5 +112,14 @@ public class FileUtil {
 
     public static byte[] base64ToBytes(String base64String) {
         return Base64.decode(base64String, Base64.DEFAULT);
+    }
+
+    @NotNull
+    public static byte[] jsonObjectToBytes(@NotNull JsonObject jsonObject) {
+        return jsonObject.toString().getBytes();
+    }
+
+    public static JsonObject jsonObjectFromBytes(byte[] bytes) {
+        return new Gson().fromJson(new String(bytes), JsonObject.class);
     }
 }
