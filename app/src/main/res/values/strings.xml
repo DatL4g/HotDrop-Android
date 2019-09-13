@@ -15,17 +15,7 @@
     <string name="location_needed">This permission is needed to discover nearby devices</string>
     <string name="settings">Settings</string>
     <string name="close">Close</string>
-    <string-array name="available_settings">
-        <item>Account</item>
-        <item>Connectivity</item>
-        <item>Permissions</item>
-    </string-array>
     <string name="sign_in">Sign in</string>
-    <string-array name="sign_in_options">
-        <item>Google</item>
-        <item>Play Games</item>
-        <item>Anonymous</item>
-    </string-array>
     <string name="sing_out">Task failed successfully!</string>
     <string name="login_failed">Log in failed! Please try again!</string>
     <string name="sign_in_guest">Logged in as Guest!</string>
@@ -36,7 +26,18 @@
     <string name="account">Account</string>
     <string name="upload_info">You must be logged in to use this feature!\n\nIf you don\'t want to create an account you can sign in anonymously, but your files are less secure!\nAnyone with the download link has access!</string>
     <string name="guest">Guest</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
+    <string name="choose_destination">Choose Destination</string>
+    <string name="mime_secure">\n\nFile extension and MimeType are not the same!\n\nFile may not be safe!</string>
+    <string name="decline">Decline</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string-array name="available_settings">
+        <item>Account</item>
+        <item>Connectivity</item>
+        <item>Permissions</item>
+    </string-array>
+    <string-array name="sign_in_options">
+        <item>Google</item>
+        <item>Play Games</item>
+        <item>Anonymous</item>
+    </string-array>
 </resources>

@@ -18,8 +18,10 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.ObjectInputStream;
 import java.net.URLConnection;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -48,6 +50,25 @@ public class FileUtil {
                 .show();
     }
 
+    public static void chooseFolder(Activity activity, FolderChooseCallback folderChooseCallback) {
+        new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withFilter(true, false)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String path, File pathFile) {
+                        folderChooseCallback.onChosen(path, pathFile);
+                    }
+                })
+                // to handle the back key pressed or clicked outside the dialog:
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.cancel();
+                    }
+                })
+                .build()
+                .show();
+    }
+
     public static JsonObject jsonObjectFromFile(File file) {
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
         JsonObject jsonObject = new JsonObject();
@@ -57,6 +78,38 @@ public class FileUtil {
         jsonObject.addProperty("extension", extension);
         jsonObject.addProperty("base64", FileUtil.toBase64String(file));
         return jsonObject;
+    }
+
+    public static void writeBytesToFile(byte[] bytes, String file) {
+        FileOutputStream out = null;
+        try {
+            out = new FileOutputStream(file);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+        try {
+            out.write(bytes);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        try {
+            out.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void createFile(String path, String filename) {
+        makeDir(path);
+        File file = new File(path+File.separator+filename);
+
+        if (!file.exists()) {
+            try {
+                file.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public static String getMimeType(byte[] bytes) {
@@ -121,5 +174,41 @@ public class FileUtil {
 
     public static JsonObject jsonObjectFromBytes(byte[] bytes) {
         return new Gson().fromJson(new String(bytes), JsonObject.class);
+    }
+
+    public interface FileChooseCallback {
+        void onChosen(String path, File file);
+    }
+
+    public interface FolderChooseCallback {
+        void onChosen(String path, File file);
+    }
+
+    public static void makeDir(String path) {
+        if(!existsFile(path)) {
+            File file = new File(path);
+            file.mkdirs();
+        }
+    }
+
+    public static boolean existsFile(String path) {
+        File file = new File(path);
+        return file.exists();
+    }
+
+    public static boolean isDirectory(String path) {
+        if (!existsFile(path)) {
+            return false;
+        }
+
+        return new File(path).isDirectory();
+    }
+
+    public static boolean isFile(String path) {
+        if (!existsFile(path)) {
+            return false;
+        }
+
+        return new File(path).isFile();
     }
 }

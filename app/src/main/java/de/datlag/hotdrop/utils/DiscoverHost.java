@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Looper;
-import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -12,18 +11,21 @@ import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
 import com.adroitandroid.near.model.Host;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.gson.JsonObject;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.File;
 import java.util.Set;
 
 import de.datlag.hotdrop.ChooseDeviceFragment;
 import de.datlag.hotdrop.MainActivity;
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.TransferFragment;
 import github.nisrulz.easydeviceinfo.base.EasyDeviceMod;
+import io.noties.markwon.Markwon;
+import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
+import io.noties.markwon.ext.tables.TablePlugin;
+import io.noties.markwon.html.HtmlPlugin;
 
 public class DiscoverHost {
 
@@ -31,13 +33,20 @@ public class DiscoverHost {
     private NearDiscovery nearDiscovery;
     private NearConnect nearConnect;
     private ChooseDeviceFragment chooseDeviceFragment = null;
+    private TransferFragment transferFragment;
+    private DiscoverHost discoverHost;
+    private Markwon markwon;
+    private HostTransfer hostTransfer;
 
     public static final String MESSAGE_REQUEST_START_TRANSFER = "start_chat";
     public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
     public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
 
-    public DiscoverHost(Activity activity) {
+    public DiscoverHost(Activity activity, TransferFragment transferFragment) {
         this.activity = activity;
+        this.transferFragment = transferFragment;
+        discoverHost = this;
+        hostTransfer = new HostTransfer(activity);
         init();
     }
 
@@ -54,6 +63,12 @@ public class DiscoverHost {
                 .fromDiscovery(nearDiscovery)
                 .setContext(activity)
                 .setListener(getNearConnectListener(), Looper.getMainLooper())
+                .build();
+
+        markwon = Markwon.builder(activity)
+                .usePlugin(StrikethroughPlugin.create())
+                .usePlugin(HtmlPlugin.create())
+                .usePlugin(TablePlugin.create(activity))
                 .build();
     }
 
@@ -164,16 +179,7 @@ public class DiscoverHost {
                             break;
 
                         default:
-                            JsonObject jsonObject = FileUtil.jsonObjectFromBytes(bytes);
-                            Log.e("Extension", jsonObject.get("extension").getAsString());
-                            new MaterialAlertDialogBuilder(activity)
-                                    .setTitle(jsonObject.get("name").getAsString())
-                                    .setMessage("Name: "+ jsonObject.get("name").getAsString()+ "\n" +
-                                            "Path: " + jsonObject.get("path").getAsString()+ "\n" +
-                                            "Extension: "+ jsonObject.get("extension").getAsString()+ "\n" +
-                                            "MimeType: "+ jsonObject.get("mime").getAsString())
-                            .setPositiveButton(activity.getString(R.string.okay), null)
-                            .create().show();
+                            stopDiscoveryAndStartTransfer(sender);
                             break;
                     }
                 }
@@ -208,6 +214,7 @@ public class DiscoverHost {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 nearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
+                                stopDiscoveryAndStartTransfer(sender);
                             }
                         })
                         .setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener() {
@@ -223,14 +230,19 @@ public class DiscoverHost {
                         .setNeutralButton(activity.getString(R.string.okay), null).create().show();
                 break;
             case MESSAGE_RESPONSE_ACCEPT_REQUEST:
-                // TODO: start fragment with file transfer
-                FileUtil.chooseFile(activity, new FileChooseCallback() {
-                    @Override
-                    public void onChosen(String path, File file) {
-                        send(sender, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(file)));
-                    }
-                });
+                stopDiscoveryAndStartTransfer(sender);
                 break;
         }
+    }
+
+    private void stopDiscoveryAndStartTransfer(Host host) {
+        nearConnect.stopReceiving(false);
+        nearDiscovery.stopDiscovery();
+        transferFragment = new TransferFragment(activity, discoverHost, host);
+        if (activity instanceof MainActivity) {
+            ((MainActivity) activity).switch2Fragment(transferFragment);
+        }
+        hostTransfer.setHost(host);
+        hostTransfer.init();
     }
 }

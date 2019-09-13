@@ -39,7 +39,6 @@ import com.google.firebase.auth.AuthResult;
 import com.google.gson.JsonObject;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
-import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +46,6 @@ import java.io.File;
 import java.util.ArrayList;
 
 import de.datlag.hotdrop.utils.DiscoverHost;
-import de.datlag.hotdrop.utils.FileChooseCallback;
 import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.InfoPageManager;
 import de.datlag.hotdrop.utils.PermissionManager;
@@ -100,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
     private DiscoverHost discoverHost;
     public SearchDeviceFragment searchDeviceFragment;
+    private TransferFragment transferFragment;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -150,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                 .build();
         setSupportActionBar(toolbar);
 
-        discoverHost = new DiscoverHost(activity);
+        discoverHost = new DiscoverHost(activity, transferFragment);
         searchDeviceFragment = SearchDeviceFragment.newInstance();
         switch2Fragment(searchDeviceFragment);
         permissionManager = new PermissionManager(activity);
@@ -337,7 +336,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                     })
                     .create().show();
         } else {
-            FileUtil.chooseFile(activity, new FileChooseCallback() {
+            FileUtil.chooseFile(activity, new FileUtil.FileChooseCallback() {
                 @Override
                 public void onChosen(String path, File file) {
                     byte[] bytes = FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(file));
@@ -386,6 +385,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     protected void onDestroy() {
         super.onDestroy();
         discoverHost.stopDiscovery();
+        activity.finish();
     }
 
     @Override
