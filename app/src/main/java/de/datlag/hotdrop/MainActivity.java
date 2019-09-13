@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.net.Uri;
@@ -32,6 +33,7 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.adroitandroid.near.model.Host;
 import com.bumptech.glide.Glide;
+import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -133,7 +135,12 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
     private void initializeLogic() {
         activity = MainActivity.this;
-        Glide.with(activity).load(ContextCompat.getDrawable(activity, R.drawable.circles)).centerCrop().into(backgroundImage);
+        Glide.with(activity)
+                .load(ContextCompat.getDrawable(activity, R.drawable.circles))
+                .centerCrop()
+                .apply(new RequestOptions().fitCenter())
+                .override(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels)
+                .into(backgroundImage);
 
         menuItems.add(new SpeedDialActionItem.Builder(downloadID, R.drawable.ic_cloud_download_white_24dp)
                 .setFabImageTintColor(Color.WHITE)

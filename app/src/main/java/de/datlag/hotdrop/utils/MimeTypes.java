@@ -1,5 +1,6 @@
 package de.datlag.hotdrop.utils;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -182,6 +183,7 @@ public class MimeTypes {
                 put1("mp2", MIME_AUDIO_MPEG);
                 put1("mp1", MIME_AUDIO_MPEG);
                 put1("mpga", MIME_AUDIO_MPEG);
+                put1("m4a", MIME_AUDIO_MPEG);
                 put1("kar", MIME_AUDIO_MIDI);
                 put1("mid", MIME_AUDIO_MIDI);
                 put1("midi", MIME_AUDIO_MIDI);
@@ -289,6 +291,7 @@ public class MimeTypes {
                 put1("mpg", MIME_VIDEO_MPEG);
                 put1("mpe", MIME_VIDEO_MPEG);
                 put1("abs", MIME_VIDEO_MPEG);
+                put1("mp4", MIME_VIDEO_MPEG);
                 put1("doc", MIME_APPLICATION_MSWORD);
                 put1("docx", MIME_APPLICATION_MSWORD_2007);
                 put1("odt", MIME_APPLICATION_VND_TEXT);
@@ -474,5 +477,71 @@ public class MimeTypes {
             ext = "unknown";
         }
         return ext;
+    }
+
+    @Contract(pure = true)
+    public static boolean isImage(@NotNull String mimeType) {
+        boolean returnValue = false;
+
+        switch (mimeType) {
+            case MIME_IMAGE_BMP:
+            case MIME_IMAGE_CGM:
+            case MIME_IMAGE_GIF:
+            case MIME_IMAGE_IEF:
+            case MIME_IMAGE_JPEG:
+            case MIME_IMAGE_PNG:
+            case MIME_IMAGE_SVG_XML:
+            case MIME_IMAGE_TIFF:
+            case MIME_IMAGE_VND_DJVU:
+            case MIME_IMAGE_WAP_WBMP:
+            case MIME_IMAGE_X_CMU_RASTER:
+            case MIME_IMAGE_X_ICON:
+            case MIME_IMAGE_X_PORTABLE_ANYMAP:
+            case MIME_IMAGE_X_PORTABLE_BITMAP:
+            case MIME_IMAGE_X_PORTABLE_GRAYMAP:
+            case MIME_IMAGE_X_PORTABLE_PIXMAP:
+            case MIME_IMAGE_X_RGB:
+                returnValue = true;
+                break;
+        }
+
+        return returnValue;
+    }
+
+    @Contract(pure = true)
+    public static boolean isVideo(@NotNull String mimeType) {
+        boolean returnValue = false;
+
+        switch (mimeType) {
+            case MIME_VIDEO_MPEG:
+            case MIME_VIDEO_QUICKTIME:
+            case MIME_VIDEO_VND_MPEGURL:
+            case MIME_VIDEO_X_MS_WMV:
+            case MIME_VIDEO_X_MSVIDEO:
+            case MIME_VIDEO_X_SGI_MOVIE:
+                returnValue = true;
+                break;
+        }
+
+        return returnValue;
+    }
+
+    @Contract(pure = true)
+    public static boolean isAudio(@NotNull String mimeType) {
+        boolean returnValue = false;
+
+        switch (mimeType) {
+            case MIME_AUDIO_BASIC:
+            case MIME_AUDIO_MIDI:
+            case MIME_AUDIO_MPEG:
+            case MIME_AUDIO_X_AIFF:
+            case MIME_AUDIO_X_MPEGURL:
+            case MIME_AUDIO_X_PN_REALAUDIO:
+            case MIME_AUDIO_X_WAV:
+                returnValue = true;
+                break;
+        }
+
+        return returnValue;
     }
 }
