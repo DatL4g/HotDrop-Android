@@ -54,9 +54,11 @@
         android:name="de.datlag.hotdrop.App"
         android:banner="@drawable/tv_banner"
         android:requestLegacyExternalStorage="true"
-        android:resizeableActivity="true">
+        android:resizeableActivity="true"
+        android:largeHeap="true">
         <activity android:name="de.datlag.hotdrop.MainActivity"
-            android:supportsPictureInPicture="true">
+            android:supportsPictureInPicture="true"
+            android:configChanges="keyboardHidden|orientation|screenSize">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

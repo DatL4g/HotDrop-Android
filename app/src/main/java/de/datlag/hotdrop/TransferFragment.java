@@ -1,12 +1,8 @@
 package de.datlag.hotdrop;
 
 import android.app.Activity;
-import android.content.ClipData;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
-import android.graphics.Color;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.appcompat.widget.AppCompatImageView;
@@ -43,6 +39,7 @@ public class TransferFragment extends Fragment {
     private LinearLayoutCompat fileContainer;
     private AppCompatImageView folderIcon;
     private AppCompatTextView hostName;
+    private String defaultPath = null;
 
     public TransferFragment(Activity activity, Host host) {
         this.activity = activity;
@@ -80,10 +77,11 @@ public class TransferFragment extends Fragment {
                         .setPositiveButton("File", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                FileUtil.chooseFile(activity, new FileUtil.FileChooseCallback() {
+                                FileUtil.chooseFile(activity, defaultPath, new FileUtil.FileChooseCallback() {
                                     @Override
                                     public void onChosen(String path, File file) {
                                         hostTransfer.send(host, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(activity, file)));
+                                        defaultPath = path;
                                     }
                                 });
                             }
@@ -91,11 +89,13 @@ public class TransferFragment extends Fragment {
                         .setNegativeButton("Folder", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialogInterface, int i) {
-                                FileUtil.chooseFolder(activity, new FileUtil.FolderChooseCallback() {
+                                FileUtil.chooseFolder(activity, defaultPath, new FileUtil.FolderChooseCallback() {
                                     @Override
                                     public void onChosen(String path, File file) {
                                         Log.e("Path", path);
                                         Log.e("File", file.getName());
+
+                                        defaultPath = path;
                                     }
                                 });
                             }
@@ -126,5 +126,11 @@ public class TransferFragment extends Fragment {
                 }
             }
         });
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
     }
 }

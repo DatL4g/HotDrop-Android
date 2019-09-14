@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -54,6 +55,55 @@ public class FileUtil {
     public static void chooseFolder(Activity activity, FolderChooseCallback folderChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withFilter(true, false)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String path, File pathFile) {
+                        folderChooseCallback.onChosen(path, pathFile);
+                    }
+                })
+                // to handle the back key pressed or clicked outside the dialog:
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.cancel();
+                    }
+                })
+                .build()
+                .show();
+    }
+
+    public static void chooseFile(Activity activity, String startingPath, FileChooseCallback fileChooseCallback) {
+        FileFilter fileFilter = new FileFilter() {
+            @Override
+            public boolean accept(@NotNull File file) {
+                if (file.length() > Runtime.getRuntime().maxMemory() /3) {
+                    return false;
+                }
+                return true;
+            }
+        };
+        new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withStartFile(startingPath)
+                .withFilter(fileFilter)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String path, File pathFile) {
+                        fileChooseCallback.onChosen(path, pathFile);
+                    }
+                })
+                // to handle the back key pressed or clicked outside the dialog:
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.cancel();
+                    }
+                })
+                .build()
+                .show();
+    }
+
+    public static void chooseFolder(Activity activity, String startingPath, FolderChooseCallback folderChooseCallback) {
+        new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withFilter(true, false)
+                .withStartFile(startingPath)
                 .withChosenListener(new ChooserDialog.Result() {
                     @Override
                     public void onChoosePath(String path, File pathFile) {
