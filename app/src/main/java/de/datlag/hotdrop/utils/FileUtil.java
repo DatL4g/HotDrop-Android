@@ -2,6 +2,7 @@ package de.datlag.hotdrop.utils;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.net.Uri;
 import android.util.Base64;
@@ -69,14 +70,14 @@ public class FileUtil {
                 .show();
     }
 
-    public static JsonObject jsonObjectFromFile(File file) {
+    public static JsonObject jsonObjectFromFile(@NotNull Context context, File file) {
         String extension = MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
         JsonObject jsonObject = new JsonObject();
-        jsonObject.addProperty("path", file.getAbsolutePath());
-        jsonObject.addProperty("name", file.getName());
-        jsonObject.addProperty("mime", MimeTypes.getMimeType(extension));
-        jsonObject.addProperty("extension", extension);
-        jsonObject.addProperty("base64", FileUtil.toBase64String(file));
+        jsonObject.addProperty(context.getString(R.string.path), file.getAbsolutePath());
+        jsonObject.addProperty(context.getString(R.string.name), file.getName());
+        jsonObject.addProperty(context.getString(R.string.mime), MimeTypes.getMimeType(extension));
+        jsonObject.addProperty(context.getString(R.string.extension), extension);
+        jsonObject.addProperty(context.getString(R.string.base64), FileUtil.toBase64String(file));
         return jsonObject;
     }
 

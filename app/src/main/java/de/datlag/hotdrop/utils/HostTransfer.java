@@ -73,13 +73,16 @@ public class HostTransfer {
     public HostTransfer(Activity activity, Host host) {
         this.activity = activity;
         this.host = host;
+
+        init();
     }
 
     public void setHost(Host host) {
         this.host = host;
+        init();
     }
 
-    public void init() {
+    private void init() {
         markwon = Markwon.builder(activity)
                 .usePlugin(HtmlPlugin.create())
                 .usePlugin(StrikethroughPlugin.create())
@@ -95,13 +98,17 @@ public class HostTransfer {
         nearConnect.startReceiving();
     }
 
+    public void send(Host host, byte[]  bytes) {
+        nearConnect.send(bytes, host);
+    }
+
     public void saveFile(byte[] bytes) {
         JsonObject jsonObject = FileUtil.jsonObjectFromBytes(bytes);
-        String name = jsonObject.get("name").getAsString();
-        String path = jsonObject.get("path").getAsString();
-        String base64Result = jsonObject.get("base64").getAsString();
-        String extension = jsonObject.get("extension").getAsString();
-        String mimeType = jsonObject.get("mime").getAsString();
+        String name = jsonObject.get(activity.getString(R.string.name)).getAsString();
+        String path = jsonObject.get(activity.getString(R.string.path)).getAsString();
+        String base64Result = jsonObject.get(activity.getString(R.string.base64)).getAsString();
+        String extension = jsonObject.get(activity.getString(R.string.extension)).getAsString();
+        String mimeType = jsonObject.get(activity.getString(R.string.mime)).getAsString();
         String detectedMimeType = FileUtil.getMimeType(FileUtil.base64ToBytes(base64Result));
         String realMimeType = (detectedMimeType == null) ? "" : "**Real MimeType:** "+detectedMimeType;
         String mimeAndExtSecure = activity.getString(R.string.mime_secure);
@@ -112,7 +119,6 @@ public class HostTransfer {
             mimeAndExtSecure = "";
         }
 
-        //final Spanned markdown = markwon.toMarkdown("**Hello there!**<br><a href=\"google.com\">Google</a>");
         final Spanned markdown = markwon.toMarkdown("**Path:**" + path.replace(name, "")+ "<br>" +
                 "**Extension:** "+ extension+ "<br>" +
                 "**MimeType:** "+ mimeType+ "<br>" +
@@ -174,6 +180,8 @@ public class HostTransfer {
                                 @Override
                                 public void onClick(DialogInterface dialogInterface, int i) {
                                     alertDialog.show();
+                                    player.release();
+                                    player.stop(true);
                                 }
                             })
                             .setView(playerView)

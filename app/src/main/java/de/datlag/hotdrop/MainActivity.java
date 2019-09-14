@@ -346,7 +346,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             FileUtil.chooseFile(activity, new FileUtil.FileChooseCallback() {
                 @Override
                 public void onChosen(String path, File file) {
-                    byte[] bytes = FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(file));
+                    byte[] bytes = FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(activity, file));
                     JsonObject object = FileUtil.jsonObjectFromBytes(bytes);
 
                     Log.e("Gson", object.toString());

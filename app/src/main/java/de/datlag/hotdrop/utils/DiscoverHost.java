@@ -36,7 +36,6 @@ public class DiscoverHost {
     private TransferFragment transferFragment;
     private DiscoverHost discoverHost;
     private Markwon markwon;
-    private HostTransfer hostTransfer;
 
     public static final String MESSAGE_REQUEST_START_TRANSFER = "start_chat";
     public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
@@ -46,7 +45,6 @@ public class DiscoverHost {
         this.activity = activity;
         this.transferFragment = transferFragment;
         discoverHost = this;
-        hostTransfer = new HostTransfer(activity);
         init();
     }
 
@@ -238,11 +236,9 @@ public class DiscoverHost {
     private void stopDiscoveryAndStartTransfer(Host host) {
         nearConnect.stopReceiving(false);
         nearDiscovery.stopDiscovery();
-        transferFragment = new TransferFragment(activity, discoverHost, host);
+        transferFragment = new TransferFragment(activity, host);
         if (activity instanceof MainActivity) {
             ((MainActivity) activity).switch2Fragment(transferFragment);
         }
-        hostTransfer.setHost(host);
-        hostTransfer.init();
     }
 }

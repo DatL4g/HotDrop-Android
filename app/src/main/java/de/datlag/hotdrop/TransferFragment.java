@@ -1,13 +1,19 @@
 package de.datlag.hotdrop;
 
 import android.app.Activity;
+import android.content.ClipData;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 
+import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.widget.ImageViewCompat;
 import androidx.fragment.app.Fragment;
 
 import android.util.Log;
@@ -24,22 +30,22 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-import de.datlag.hotdrop.utils.DiscoverHost;
 import de.datlag.hotdrop.utils.FileUtil;
+import de.datlag.hotdrop.utils.HostTransfer;
 
 
 public class TransferFragment extends Fragment {
 
     private Activity activity;
-    private DiscoverHost discoverHost;
+    private HostTransfer hostTransfer;
     private Host host;
     private View rootView;
     private LinearLayoutCompat fileContainer;
+    private AppCompatImageView folderIcon;
     private AppCompatTextView hostName;
 
-    public TransferFragment(Activity activity, DiscoverHost discoverHost, Host host) {
+    public TransferFragment(Activity activity, Host host) {
         this.activity = activity;
-        this.discoverHost = discoverHost;
         this.host = host;
     }
 
@@ -59,10 +65,13 @@ public class TransferFragment extends Fragment {
 
     private void init() {
         fileContainer = rootView.findViewById(R.id.file_container);
+        folderIcon = rootView.findViewById(R.id.folder_icon);
         hostName = rootView.findViewById(R.id.host_name);
     }
 
     private void initLogic() {
+        hostTransfer = new HostTransfer(activity, host);
+
         fileContainer.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -74,7 +83,7 @@ public class TransferFragment extends Fragment {
                                 FileUtil.chooseFile(activity, new FileUtil.FileChooseCallback() {
                                     @Override
                                     public void onChosen(String path, File file) {
-                                        discoverHost.send(host, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(file)));
+                                        hostTransfer.send(host, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(activity, file)));
                                     }
                                 });
                             }
@@ -94,6 +103,7 @@ public class TransferFragment extends Fragment {
             }
         });
 
+
         fileContainer.setOnDragListener(new View.OnDragListener() {
             @Override
             public boolean onDrag(View view, DragEvent dragEvent) {
@@ -105,5 +115,16 @@ public class TransferFragment extends Fragment {
         });
 
         hostName.setText(host.getName().substring(host.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1));
+
+        fileContainer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View view, boolean b) {
+                if (b) {
+                    ImageViewCompat.setImageTintList(folderIcon, ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.primaryDarkColor)));
+                } else {
+                    ImageViewCompat.setImageTintList(folderIcon, ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.primaryColor)));
+                }
+            }
+        });
     }
 }

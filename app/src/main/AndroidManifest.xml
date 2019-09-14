@@ -52,8 +52,11 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
         android:name="de.datlag.hotdrop.App"
-        android:banner="@drawable/tv_banner">
-        <activity android:name="de.datlag.hotdrop.MainActivity">
+        android:banner="@drawable/tv_banner"
+        android:requestLegacyExternalStorage="true"
+        android:resizeableActivity="true">
+        <activity android:name="de.datlag.hotdrop.MainActivity"
+            android:supportsPictureInPicture="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 

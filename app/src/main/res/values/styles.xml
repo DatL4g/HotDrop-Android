@@ -15,6 +15,7 @@
     <style name="FileChooserButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textAppearanceButton">@style/Widget.MaterialComponents.Button.TextButton.Dialog</item>
         <item name="android:textColor">@color/primaryColor</item>
+        <item name="android:background">@drawable/file_chooser_button_selector</item>
     </style>
     <style name="FileChooserDialogStyle" parent="ThemeOverlay.MaterialComponents.MaterialAlertDialog">
         <item name="android:windowTitleStyle">@style/FileChooserTitleStyle</item>

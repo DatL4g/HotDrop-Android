@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">HotDrop</string>
+    <string name="app_name" translatable="false">HotDrop</string>
     <string name="open_hotdrop">Open HotDrop on any other devices to send files.</string>
     <string name="info_text">Easily send files and folders from one device to another.</string>
     <string name="github_repo">https://github.com/DATL4G/HotDrop-Android</string>
@@ -29,6 +29,11 @@
     <string name="choose_destination">Choose Destination</string>
     <string name="mime_secure">\n\nFile extension and recognized MimeTypes could not be verified!\nFile may not be safe!</string>
     <string name="decline">Decline</string>
+    <string name="name" translatable="false">name</string>
+    <string name="path" translatable="false">path</string>
+    <string name="mime" translatable="false">mime</string>
+    <string name="extension" translatable="false">extension</string>
+    <string name="base64" translatable="false">base64</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string-array name="available_settings">
         <item>Account</item>

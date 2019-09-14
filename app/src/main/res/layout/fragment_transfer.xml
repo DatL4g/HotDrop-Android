@@ -23,7 +23,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
-        android:background="@drawable/dash_shape"
+        android:background="@drawable/file_container_selector"
         android:orientation="vertical"
         android:gravity="center"
         android:padding="16dp"
@@ -33,7 +33,8 @@
         <androidx.appcompat.widget.AppCompatImageView
             android:layout_width="?attr/actionBarSize"
             android:layout_height="?attr/actionBarSize"
-            app:srcCompat="@drawable/ic_folder_open_primary_24dp" />
+            app:srcCompat="@drawable/ic_folder_open_primary_24dp"
+            android:id="@+id/folder_icon"/>
 
         <androidx.appcompat.widget.AppCompatTextView
             android:layout_width="match_parent"
