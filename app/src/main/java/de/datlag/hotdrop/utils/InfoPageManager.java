@@ -48,17 +48,10 @@ public class InfoPageManager {
         int dy = Math.max(startPointY, targetView.getHeight() - startPointY);
         float finalRadius = (float) Math.hypot(dx, dy);
         Animator animator;
-            if (isReverse) {
-                animator = android.view.ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, finalRadius, 0);
-            } else {
-                animator = android.view.ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, 0, finalRadius);
-            }
+        if (isReverse) {
+            animator = ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, finalRadius, 0);
         } else {
-            if (isReverse) {
-                animator = ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, finalRadius, 0);
-            } else {
-                animator = ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, 0, finalRadius);
-            }
+            animator = ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, 0, finalRadius);
         }
 
         animator.setInterpolator(new AccelerateDecelerateInterpolator());
@@ -70,8 +63,12 @@ public class InfoPageManager {
 
             @Override
             public void onAnimationEnd(Animator animation) {
-                if (!isReverse) {
+                if (isReverse) {
+                    mainLayout.setVisibility(View.VISIBLE);
+                    targetView.setVisibility(View.GONE);
+                } else {
                     mainLayout.setVisibility(View.GONE);
+                    targetView.setVisibility(View.VISIBLE);
                 }
             }
 
