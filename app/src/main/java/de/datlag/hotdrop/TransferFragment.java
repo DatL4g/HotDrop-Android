@@ -4,6 +4,12 @@ import android.app.Activity;
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.DragEvent;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
@@ -12,20 +18,12 @@ import androidx.core.content.ContextCompat;
 import androidx.core.widget.ImageViewCompat;
 import androidx.fragment.app.Fragment;
 
-import android.util.Log;
-import android.view.DragEvent;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Toast;
-
 import com.adroitandroid.near.model.Host;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.HostTransfer;

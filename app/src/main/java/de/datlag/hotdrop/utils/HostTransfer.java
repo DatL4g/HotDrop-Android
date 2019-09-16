@@ -2,6 +2,7 @@ package de.datlag.hotdrop.utils;
 
 import android.app.Activity;
 import android.os.Looper;
+
 import androidx.collection.ArraySet;
 
 import com.adroitandroid.near.connect.NearConnect;

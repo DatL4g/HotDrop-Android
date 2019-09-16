@@ -48,8 +48,6 @@ public class InfoPageManager {
         int dy = Math.max(startPointY, targetView.getHeight() - startPointY);
         float finalRadius = (float) Math.hypot(dx, dy);
         Animator animator;
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             if (isReverse) {
                 animator = android.view.ViewAnimationUtils.createCircularReveal(targetView, startPointX, startPointY, finalRadius, 0);
             } else {
