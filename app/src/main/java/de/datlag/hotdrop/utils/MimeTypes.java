@@ -480,7 +480,10 @@ public class MimeTypes {
     }
 
     @Contract(pure = true)
-    public static boolean isImage(@NotNull String mimeType) {
+    public static boolean isImage(String mimeType) {
+        if (mimeType == null) {
+            return false;
+        }
         boolean returnValue = false;
 
         switch (mimeType) {

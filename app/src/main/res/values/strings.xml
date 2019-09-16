@@ -34,6 +34,9 @@
     <string name="mime" translatable="false">mime</string>
     <string name="extension" translatable="false">extension</string>
     <string name="base64" translatable="false">base64</string>
+    <string name="size" translatable="false">size</string>
+    <string name="part" translatable="false">part</string>
+    <string name="maxParts" translatable="false">maxParts</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string-array name="available_settings">
         <item>Account</item>

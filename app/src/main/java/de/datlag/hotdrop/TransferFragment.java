@@ -25,6 +25,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.HostTransfer;
@@ -80,7 +81,7 @@ public class TransferFragment extends Fragment {
                                 FileUtil.chooseFile(activity, defaultPath, new FileUtil.FileChooseCallback() {
                                     @Override
                                     public void onChosen(String path, File file) {
-                                        hostTransfer.send(host, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(activity, file)));
+                                        hostTransfer.startTransfer(file);
                                         defaultPath = path;
                                     }
                                 });
