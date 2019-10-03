@@ -14,11 +14,13 @@ import com.obsez.android.lib.filechooser.ChooserDialog;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
+import org.zeroturnaround.zip.ZipUtil;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -42,6 +44,25 @@ public class FileUtil {
 
     public static void chooseFile(Activity activity, FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String path, File pathFile) {
+                        fileChooseCallback.onChosen(path, pathFile);
+                    }
+                })
+                // to handle the back key pressed or clicked outside the dialog:
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    public void onCancel(DialogInterface dialog) {
+                        dialog.cancel();
+                    }
+                })
+                .build()
+                .show();
+    }
+
+    public static void chooseFile(Activity activity, FileFilter fileFilter, FileChooseCallback fileChooseCallback) {
+        new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withFilter(fileFilter)
                 .withChosenListener(new ChooserDialog.Result() {
                     @Override
                     public void onChoosePath(String path, File pathFile) {
@@ -114,6 +135,43 @@ public class FileUtil {
                 })
                 .build()
                 .show();
+    }
+
+    public static void chooseAny(Activity activity, AnyChooseCallback anyChooseCallback) {
+        new ChooserDialog(activity, R.style.FileChooserStyle)
+                .withFilter(false, true)
+                .withChosenListener(new ChooserDialog.Result() {
+                    @Override
+                    public void onChoosePath(String dir, File dirFile) {
+                        if (isFile(dir)) {
+                            anyChooseCallback.onChosenFile(dir, dirFile);
+                        } else if (isDirectory(dir)) {
+                            anyChooseCallback.onChosenFolder(dir, dirFile);
+                        }
+                    }
+                })
+                .withOnCancelListener(new DialogInterface.OnCancelListener() {
+                    @Override
+                    public void onCancel(DialogInterface dialogInterface) {
+                        dialogInterface.cancel();
+                    }
+                })
+                .withNegativeButton("Choose Folder", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        new ChooserDialog.Result() {
+                            @Override
+                            public void onChoosePath(String dir, File dirFile) {
+                                if (isFile(dir)) {
+                                    anyChooseCallback.onChosenFile(dir, dirFile);
+                                } else if (isDirectory(dir)) {
+                                    anyChooseCallback.onChosenFolder(dir, dirFile);
+                                }
+                            }
+                        };
+                    }
+                })
+                .build().show();
     }
 
     public static JsonObject jsonObjectFromFile(@NotNull Context context, File file, @NotNull ArrayList<byte[]> bytes, int pos) {
@@ -392,6 +450,12 @@ public class FileUtil {
         void onChosen(String path, File file);
     }
 
+    public interface AnyChooseCallback {
+        void onChosenFolder(String path, File file);
+
+        void onChosenFile(String path, File file);
+    }
+
     public static void makeDir(String path) {
         if(!existsFile(path)) {
             File file = new File(path);
@@ -401,6 +465,10 @@ public class FileUtil {
 
     public static boolean existsFile(String path) {
         File file = new File(path);
+        return file.exists();
+    }
+
+    public static boolean existsFile(@NotNull File file) {
         return file.exists();
     }
 
@@ -418,5 +486,56 @@ public class FileUtil {
         }
 
         return new File(path).isFile();
+    }
+
+    public static boolean isDirectory(File file) {
+        if (!existsFile(file)) {
+            return false;
+        }
+
+        return file.isDirectory();
+    }
+
+    public static boolean isFile(File file) {
+        if (!existsFile(file)) {
+            return false;
+        }
+
+        return file.isFile();
+    }
+
+    @NotNull
+    public static File folderToFile(@NotNull Context context, @NotNull File file) {
+        File tempDir = context.getCacheDir();
+        File tempFile = null;
+        try {
+            tempFile = File.createTempFile(file.getName(), ".zip", tempDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ZipUtil.pack(file, tempFile);
+        Objects.requireNonNull(tempFile).deleteOnExit();
+
+        return tempFile;
+    }
+
+    @NotNull
+    public static File folderToFile(@NotNull Context context, String path) {
+        File file = new File(path);
+        File tempDir = context.getCacheDir();
+        File tempFile = null;
+        try {
+            tempFile = File.createTempFile(file.getName(), ".zip", tempDir);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        ZipUtil.pack(file, tempFile);
+        Objects.requireNonNull(tempFile).deleteOnExit();
+
+        return tempFile;
+    }
+
+    public static String getFileExtension(File file) {
+        return MimeTypeMap.getFileExtensionFromUrl(Uri.fromFile(file).toString());
     }
 }

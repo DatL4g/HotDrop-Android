@@ -11,8 +11,6 @@
     <string name="cancel">Cancel</string>
     <string name="data_protection_text">This is just an example</string>
     <string name="open_in_browser">Open in Browser</string>
-    <string name="location">Location</string>
-    <string name="location_needed">This permission is needed to discover nearby devices</string>
     <string name="settings">Settings</string>
     <string name="close">Close</string>
     <string name="sign_in">Sign in</string>
@@ -45,7 +43,21 @@
     </string-array>
     <string-array name="sign_in_options">
         <item>Google</item>
-        <item>Play Games</item>
+        <item>InteraApps Auth</item>
+        <item>Github</item>
         <item>Anonymous</item>
     </string-array>
+    <string-array name="permission_info">
+        <item>The Location Permission is needed to access your device hardware!</item>
+        <item>YOUR LOCATION IS NEVER FETCHED OR SAVED!</item>
+        <item>The Storage Permission is needed to access your files and folders.</item>
+        <item>Without this permission you are unable to upload or download any file or folder.</item>
+    </string-array>
+    <string-array name="permission_not_granted">
+        <item>Needed Permissions are not granted!</item>
+        <item>App won\'t work without these Permissions!</item>
+    </string-array>
+    <string name="not_granted">Not granted</string>
+    <string name="location_storage">Location and Storage</string>
+    <string name="intera_user_url" translatable="false">https://auth.hotdrop.interaapps.de/auth/v1/getuser/</string>
 </resources>

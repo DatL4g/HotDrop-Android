@@ -2,6 +2,8 @@ package de.datlag.hotdrop;
 
 import android.Manifest;
 import android.app.Activity;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -36,6 +38,13 @@ import com.google.android.material.appbar.AppBarLayout;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.karumi.dexter.Dexter;
+import com.karumi.dexter.MultiplePermissionsReport;
+import com.karumi.dexter.PermissionToken;
+import com.karumi.dexter.listener.PermissionRequest;
+import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
 
@@ -43,15 +52,18 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
+import de.datlag.hotdrop.firebase.StorageManager;
 import de.datlag.hotdrop.utils.DiscoverHost;
 import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.InfoPageManager;
-import de.datlag.hotdrop.utils.PermissionManager;
 import de.datlag.hotdrop.utils.SettingsManager;
 import de.interaapps.firebasemanager.auth.AnonymousAuth;
+import de.interaapps.firebasemanager.auth.EmailAuth;
 import de.interaapps.firebasemanager.auth.GoogleAuth;
-import de.interaapps.firebasemanager.auth.PlayGamesAuth;
+import de.interaapps.firebasemanager.auth.OAuth;
+import de.interaapps.firebasemanager.auth.OAuthEnum;
 import de.interaapps.firebasemanager.core.FirebaseManager;
 import de.interaapps.firebasemanager.core.auth.Auth;
 import io.codetail.widget.RevealFrameLayout;
@@ -89,15 +101,15 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private ArrayList<SpeedDialActionItem> menuItems = new ArrayList<>();
 
     private SettingsManager settingsManager;
-    private PermissionManager permissionManager;
     private FirebaseManager firebaseManager;
     private GoogleAuth googleAuth;
-    private PlayGamesAuth playGamesAuth;
+    private EmailAuth emailAuth;
+    private OAuth githubAuth;
     private AnonymousAuth anonymousAuth;
+    private StorageManager storageManager;
 
     private DiscoverHost discoverHost;
     public SearchDeviceFragment searchDeviceFragment;
-    private TransferFragment transferFragment;
 
     @Override
     protected void attachBaseContext(Context newBase) {
@@ -108,6 +120,65 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        activity = MainActivity.this;
+
+        Dexter.withActivity(this)
+                .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                .withListener(new MultiplePermissionsListener() {
+                    @Override
+                    public void onPermissionsChecked(MultiplePermissionsReport report) {
+                        if (!report.areAllPermissionsGranted()) {
+                            if (report.isAnyPermissionPermanentlyDenied()) {
+                                String message = "";
+                                String[] permissionInfo = getResources().getStringArray(R.array.permission_info);
+                                String[] permissionNotGranted = getResources().getStringArray(R.array.permission_not_granted);
+
+                                for (int i = 0; i < permissionNotGranted.length; i++) {
+                                    message += permissionNotGranted[i].concat((i+1 == permissionNotGranted.length) ? "\n\n\n" : "\n");
+                                }
+
+                                for (int i = 0; i < permissionInfo.length; i++) {
+                                    message += permissionInfo[i].concat((i+1 == permissionInfo.length) ? "" : "\n\n");
+                                }
+
+
+                                new MaterialAlertDialogBuilder(activity)
+                                        .setTitle(getString(R.string.not_granted))
+                                        .setMessage(message)
+                                        .setPositiveButton(getString(R.string.close), new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialogInterface, int i) {
+                                                finishAffinity();
+                                            }
+                                        })
+                                        .create().show();
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onPermissionRationaleShouldBeShown(List<PermissionRequest> permissions, PermissionToken token) {
+                        String message = "";
+                        String[] permissionInfo = getResources().getStringArray(R.array.permission_info);
+                        for (int i = 0; i < permissionInfo.length; i++) {
+                            message += permissionInfo[i].concat((i+1 == permissionInfo.length) ? "" : "\n\n");
+                        }
+
+                        new MaterialAlertDialogBuilder(activity)
+                                .setTitle(getString(R.string.location_storage))
+                                .setMessage(message)
+                                .setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        token.continuePermissionRequest();
+                                    }
+                                })
+                                .create().show();
+                    }
+                })
+                .check();
 
         initialize();
         initializeLogic();
@@ -131,7 +202,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     }
 
     private void initializeLogic() {
-        activity = MainActivity.this;
         Glide.with(activity)
                 .load(ContextCompat.getDrawable(activity, R.drawable.circles))
                 .centerCrop()
@@ -153,39 +223,24 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                 .build();
         setSupportActionBar(toolbar);
 
-        discoverHost = new DiscoverHost(activity, transferFragment);
+        discoverHost = new DiscoverHost(activity);
         searchDeviceFragment = SearchDeviceFragment.newInstance();
         switch2Fragment(searchDeviceFragment);
-        permissionManager = new PermissionManager(activity);
 
         firebaseManager = new FirebaseManager(activity);
         googleAuth = new GoogleAuth(activity, getString(R.string.default_web_client_id));
-        playGamesAuth = new PlayGamesAuth(activity, getString(R.string.default_web_client_id));
+        emailAuth = new EmailAuth(activity);
+        githubAuth = new OAuth(activity, OAuthEnum.GITHUB);
         anonymousAuth = new AnonymousAuth(activity);
         firebaseManager.addLogin(googleAuth);
-        firebaseManager.addLogin(playGamesAuth);
+        firebaseManager.addLogin(emailAuth);
+        firebaseManager.addLogin(githubAuth);
         firebaseManager.addLogin(anonymousAuth);
-        settingsManager = new SettingsManager(activity, firebaseManager, permissionManager, new SettingsManager.LoginCallbacks() {
-            @Override
-            public void onLoginSuccessful(AuthResult authResult) {
-                String loginName = null;
-                if (authResult.getUser() != null) {
-                    loginName = (authResult.getUser().isAnonymous()) ? getString(R.string.guest) : authResult.getUser().getDisplayName();
-                }
-
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.logged_in_as) + loginName, Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-
-            @Override
-            public void onLoginFailed() {
-                Snackbar snackbar = Snackbar.make(coordinatorLayout, getString(R.string.login_failed), Snackbar.LENGTH_LONG);
-                showSnackbar(snackbar);
-            }
-        });
+        settingsManager = new SettingsManager(activity, firebaseManager);
+        storageManager = new StorageManager(activity, firebaseManager);
 
         infoPageManager = new InfoPageManager();
-        infoPageManager.setLayouts(mainLayout, infoLayout, appBarLayout, toolbar, getSupportActionBar());
+        infoPageManager.setLayouts(mainLayout, infoLayout, appBarLayout, getSupportActionBar());
 
         revealButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -207,7 +262,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                 if (actionItem.getId() == uploadID) {
                     uploadCloud();
                 } else if (actionItem.getId() == downloadID) {
-                    downloadCloud();
+                    //download
                 }
 
                 return false;
@@ -269,38 +324,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                         .show();
             }
         });
-
-        permissionManager.permissionCheck(new String[]{
-                Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.READ_EXTERNAL_STORAGE,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE
-        }, new int[]{
-                PermissionManager.LOCATION_PERMISSION_CODE,
-                PermissionManager.STORAGE_READ_PERMISSION_CODE,
-                PermissionManager.STORAGE_WRITE_PERMISSION_CODE
-        });
-    }
-
-
-    public void showSnackbar(@NotNull Snackbar snackbar) {
-        final View snackBarView = snackbar.getView();
-        final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackBarView.getLayoutParams();
-        final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        } else {
-            snackBarText.setGravity(Gravity.CENTER_HORIZONTAL);
-        }
-        snackBarText.setTypeface(snackBarText.getTypeface(), Typeface.BOLD);
-
-        params.setMargins(params.leftMargin + (int) getResources().getDimension(R.dimen.snackbar_margin),
-                params.topMargin,
-                params.rightMargin + (int) getResources().getDimension(R.dimen.snackbar_margin),
-                params.bottomMargin + (int) getResources().getDimension(R.dimen.snackbar_margin));
-
-        snackBarView.setLayoutParams(params);
-        snackbar.show();
     }
 
     public void setSearching(boolean searching) {
@@ -317,12 +340,9 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     }
 
     private void uploadCloud() {
-        boolean isLoggedIn = false;
-        for (Auth auth : firebaseManager.getLogin().toArray(new Auth[0])) {
-            isLoggedIn = auth.getUser() != null;
-        }
+        FirebaseUser firebaseUser = getUser();
 
-        if (!isLoggedIn) {
+        if (firebaseUser == null) {
             new MaterialAlertDialogBuilder(activity)
                     .setTitle(getString(R.string.account))
                     .setMessage(getString(R.string.upload_info))
@@ -340,17 +360,80 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                     })
                     .create().show();
         } else {
-            FileUtil.chooseFile(activity, new FileUtil.FileChooseCallback() {
+            storageManager.startUploadFile(firebaseUser.isAnonymous(), new StorageManager.FileUploadCallback() {
                 @Override
-                public void onChosen(String path, File file) {
+                public void onSuccess(String downbloadUri) {
+                    if (firebaseUser.isAnonymous()) {
+                        new MaterialAlertDialogBuilder(activity)
+                                .setTitle("File uploaded")
+                                .setMessage("Please share this link, otherwise you cannot Download this file or have any access to it")
+                                .setPositiveButton("Share", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                                        sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Get this file from HotDrop!");
+                                        sendIntent.putExtra(Intent.EXTRA_TEXT, downbloadUri);
+                                        sendIntent.setType("text/plain");
+                                        startActivity(Intent.createChooser(sendIntent, "Share URL"));
+                                    }
+                                })
+                                .setNeutralButton("Copy Link", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                        ClipData clip = ClipData.newPlainText("DownloadUrl", downbloadUri);
+                                        clipboard.setPrimaryClip(clip);
+                                    }
+                                })
+                                .create().show();
+                    } else {
+                        Snackbar snackbar = Snackbar.make(coordinatorLayout, "File uploaded!", Snackbar.LENGTH_LONG);
+                        showSnackbar(snackbar);
+                    }
+                }
 
+                @Override
+                public void onFailure(Exception exception) {
+                    Snackbar snackbar = Snackbar.make(coordinatorLayout, "Upload failed!", Snackbar.LENGTH_LONG);
+                    showSnackbar(snackbar);
                 }
             });
         }
     }
 
-    private void downloadCloud() {
+    public void showSnackbar(@NotNull Snackbar snackbar) {
+        final View snackBarView = snackbar.getView();
+        final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackBarView.getLayoutParams();
+        final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
 
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
+        } else {
+            snackBarText.setGravity(Gravity.CENTER_HORIZONTAL);
+        }
+        snackBarText.setTypeface(snackBarText.getTypeface(), Typeface.BOLD);
+
+        params.setMargins(params.leftMargin + (int) activity.getResources().getDimension(R.dimen.snackbar_margin),
+                params.topMargin,
+                params.rightMargin + (int) activity.getResources().getDimension(R.dimen.snackbar_margin),
+                params.bottomMargin + (int) activity.getResources().getDimension(R.dimen.snackbar_margin));
+
+        snackBarView.setLayoutParams(params);
+        snackbar.show();
+    }
+
+    public CoordinatorLayout getCoordinatorLayout() {
+        return coordinatorLayout;
+    }
+
+    private FirebaseUser getUser() {
+        for (Auth auth : firebaseManager.getLogin()) {
+            if (auth.getUser() != null) {
+                return auth.getUser();
+            }
+        }
+
+        return FirebaseAuth.getInstance().getCurrentUser();
     }
 
     @Override
@@ -402,7 +485,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         googleAuth.onActivityResult(requestCode, resultCode, data);
-        playGamesAuth.onActivityResult(requestCode, resultCode, data);
     }
 
     @Override

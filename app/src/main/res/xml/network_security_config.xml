@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">worldclockapi.com</domain>
+        <domain includeSubdomains="true">http://worldclockapi.com</domain>
+        <domain includeSubdomains="true">accounts.interaapps.de/oauth/</domain>
+        <domain includeSubdomains="true">https://accounts.interaapps.de/oauth/</domain>
+        <domain includeSubdomains="true">iaauth://inteaapps/login</domain>
+        <domain includeSubdomains="true">https://auth.hotdrop.interaapps.de/auth/</domain>
+        <domain includeSubdomains="true">auth.hotdrop.interaapps.de/auth/</domain>
+    </domain-config>
+</network-security-config>

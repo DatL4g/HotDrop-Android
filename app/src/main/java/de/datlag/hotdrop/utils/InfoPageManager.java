@@ -1,7 +1,6 @@
 package de.datlag.hotdrop.utils;
 
 import android.animation.Animator;
-import android.app.Activity;
 import android.os.Build;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -20,14 +19,12 @@ public class InfoPageManager {
     private FrameLayout mainLayout;
     private FrameLayout infoLayout;
     private AppBarLayout appBarLayout;
-    private Toolbar toolbar;
     private ActionBar actionBar;
 
-    public void setLayouts(FrameLayout mainLayout, FrameLayout infoLayout, AppBarLayout appBarLayout, Toolbar toolbar, ActionBar actionBar) {
+    public void setLayouts(FrameLayout mainLayout, FrameLayout infoLayout, AppBarLayout appBarLayout, ActionBar actionBar) {
         this.mainLayout = mainLayout;
         this.infoLayout = infoLayout;
         this.appBarLayout = appBarLayout;
-        this.toolbar = toolbar;
         this.actionBar = actionBar;
     }
 
@@ -83,20 +80,20 @@ public class InfoPageManager {
 
         if (isReverse) {
             targetView.setVisibility(View.GONE);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                appBarLayout.setElevation(8);
-            } else {
-                actionBar.setElevation(8);
-            }
+            setElevation(8);
             mainLayout.setVisibility(View.VISIBLE);
         } else {
             targetView.setVisibility(View.VISIBLE);
-            actionBar.setElevation(0);
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                appBarLayout.setElevation(0);
-                toolbar.setElevation(0);
-            }
+            setElevation(0);
         }
         animator.start();
+    }
+
+    private void setElevation(int amount) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            appBarLayout.setElevation(amount);
+        } else {
+            actionBar.setElevation(amount);
+        }
     }
 }

@@ -2,7 +2,6 @@ package de.datlag.hotdrop;
 
 import android.app.Activity;
 import android.content.DialogInterface;
-import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.DragEvent;
@@ -11,15 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import androidx.appcompat.widget.AppCompatImageView;
 import androidx.appcompat.widget.AppCompatTextView;
 import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.widget.ImageViewCompat;
 import androidx.fragment.app.Fragment;
 
 import com.adroitandroid.near.model.Host;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -36,11 +33,13 @@ public class TransferFragment extends Fragment {
     private Host host;
     private View rootView;
     private LinearLayoutCompat fileContainer;
-    private AppCompatImageView folderIcon;
     private AppCompatTextView hostName;
     private String defaultPath = null;
+    private FloatingActionButton disconnectHost;
+    private FloatingActionButton uploadFile;
+    private String hostCheckedName;
 
-    public TransferFragment(Activity activity, Host host) {
+    public TransferFragment(Activity activity, @NotNull Host host) {
         this.activity = activity;
         this.host = host;
     }
@@ -61,12 +60,51 @@ public class TransferFragment extends Fragment {
 
     private void init() {
         fileContainer = rootView.findViewById(R.id.file_container);
-        folderIcon = rootView.findViewById(R.id.folder_icon);
         hostName = rootView.findViewById(R.id.host_name);
+        disconnectHost = rootView.findViewById(R.id.disconnect_host);
+        uploadFile = rootView.findViewById(R.id.upload_file);
     }
 
     private void initLogic() {
         hostTransfer = new HostTransfer(activity, host);
+        hostCheckedName = host.getName().substring(host.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
+        hostName.setText(hostCheckedName);
+
+        disconnectHost.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                new MaterialAlertDialogBuilder(activity)
+                        .setTitle(hostCheckedName)
+                        .setMessage("Are your sure you want to disconnect?")
+                        .setPositiveButton(activity.getString(R.string.ok), new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialogInterface, int i) {
+                                if (activity instanceof MainActivity) {
+                                    ((MainActivity) activity).switch2Fragment(((MainActivity) activity).searchDeviceFragment);
+                                }
+                            }
+                        })
+                        .setNegativeButton(activity.getString(R.string.cancel), null)
+                        .create().show();
+            }
+        });
+
+        uploadFile.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                FileUtil.chooseAny(activity, new FileUtil.AnyChooseCallback() {
+                    @Override
+                    public void onChosenFolder(String path, File file) {
+                        Toast.makeText(activity, "File chosen", Toast.LENGTH_LONG).show();
+                    }
+
+                    @Override
+                    public void onChosenFile(String path, File file) {
+                        Toast.makeText(activity, "Folder chosen", Toast.LENGTH_LONG).show();
+                    }
+                });
+            }
+        });
 
         fileContainer.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -91,8 +129,7 @@ public class TransferFragment extends Fragment {
                                 FileUtil.chooseFolder(activity, defaultPath, new FileUtil.FolderChooseCallback() {
                                     @Override
                                     public void onChosen(String path, File file) {
-                                        Log.e("Path", path);
-                                        Log.e("File", file.getName());
+                                        hostTransfer.startTransfer(FileUtil.folderToFile(activity, file));
 
                                         defaultPath = path;
                                     }
@@ -110,19 +147,6 @@ public class TransferFragment extends Fragment {
                     Toast.makeText(getContext(), "Dropped", Toast.LENGTH_LONG).show();
                 }
                 return false;
-            }
-        });
-
-        hostName.setText(host.getName().substring(host.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1));
-
-        fileContainer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) {
-                    ImageViewCompat.setImageTintList(folderIcon, ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.primaryDarkColor)));
-                } else {
-                    ImageViewCompat.setImageTintList(folderIcon, ColorStateList.valueOf(ContextCompat.getColor(activity, R.color.primaryColor)));
-                }
             }
         });
     }

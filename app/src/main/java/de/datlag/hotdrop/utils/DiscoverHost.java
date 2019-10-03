@@ -41,9 +41,8 @@ public class DiscoverHost {
     public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
     public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
 
-    public DiscoverHost(Activity activity, TransferFragment transferFragment) {
+    public DiscoverHost(Activity activity) {
         this.activity = activity;
-        this.transferFragment = transferFragment;
         discoverHost = this;
         init();
     }

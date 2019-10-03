@@ -51,7 +51,7 @@ public class HostTransfer {
         receiveFileUtil = new ReceiveFileUtil(activity);
     }
 
-    public void send(Host host, byte[]  bytes) {
+    public void send(Host host, byte[] bytes) {
         nearConnect.send(bytes, host);
     }
 
