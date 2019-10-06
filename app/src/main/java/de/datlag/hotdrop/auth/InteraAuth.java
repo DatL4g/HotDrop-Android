@@ -64,7 +64,7 @@ public class InteraAuth {
         clearCookies(activity);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
-        webView.loadUrl("https://accounts.interaapps.de/oauth/8");
+        webView.loadUrl(activity.getString(R.string.intera_auth_url));
         webView.setFocusable(true);
         AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen)
                 .setTitle(null)
@@ -125,19 +125,18 @@ public class InteraAuth {
         webView.requestFocus();
     }
 
-    private static void clearCookies(Context context)
-    {
+    private static void clearCookies(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             CookieManager.getInstance().removeAllCookies(null);
             CookieManager.getInstance().flush();
         } else {
-            CookieSyncManager cookieSyncMngr=CookieSyncManager.createInstance(context);
-            cookieSyncMngr.startSync();
+            CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(context);
+            cookieSyncManager.startSync();
             CookieManager cookieManager=CookieManager.getInstance();
             cookieManager.removeAllCookie();
             cookieManager.removeSessionCookie();
-            cookieSyncMngr.stopSync();
-            cookieSyncMngr.sync();
+            cookieSyncManager.stopSync();
+            cookieSyncManager.sync();
         }
     }
 

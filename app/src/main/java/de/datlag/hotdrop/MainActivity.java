@@ -32,6 +32,12 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.adroitandroid.near.model.Host;
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.Response;
+import com.android.volley.VolleyError;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.RequestOptions;
 import com.google.android.material.appbar.AppBarLayout;
@@ -295,35 +301,55 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             }
         });
 
-        final Spanned markdown = markwon.toMarkdown("**Hello there!**<br><a href=\"google.com\">Google</a>");
+
+        final String mURL = getString(R.string.dsgvo_url)+"?viaJS=true";
+        RequestQueue queue = Volley.newRequestQueue(activity);
+
         helpIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new MaterialAlertDialogBuilder(activity)
-                        .setTitle("Info App / Creator")
-                        .setMessage("All information...")
-                        .setPositiveButton(getString(R.string.okay), null)
-                        .setNeutralButton(getString(R.string.data_protection_title), new DialogInterface.OnClickListener() {
+                Snackbar snackbar = Snackbar.make(((MainActivity) activity).getCoordinatorLayout(), "Loading...", Snackbar.LENGTH_LONG);
+                ((MainActivity) activity).showSnackbar(snackbar);
+                StringRequest stringRequest = new StringRequest(Request.Method.GET, mURL,
+                        new Response.Listener<String>() {
                             @Override
-                            public void onClick(DialogInterface dialog, int which) {
-
+                            public void onResponse(String response) {
+                                final Spanned markdown = markwon.toMarkdown(response);
                                 new MaterialAlertDialogBuilder(activity)
-                                        .setTitle(getString(R.string.data_protection_title))
-                                        .setMessage(markdown)
+                                        .setTitle("Info App / Creator")
+                                        .setMessage("All information...")
                                         .setPositiveButton(getString(R.string.okay), null)
-                                        .setNeutralButton(getString(R.string.open_in_browser), new DialogInterface.OnClickListener() {
+                                        .setNeutralButton(getString(R.string.data_protection_title), new DialogInterface.OnClickListener() {
                                             @Override
                                             public void onClick(DialogInterface dialog, int which) {
-                                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_repo)));
-                                                startActivity(browserIntent);
+
+                                                new MaterialAlertDialogBuilder(activity)
+                                                        .setTitle(getString(R.string.data_protection_title))
+                                                        .setMessage(markdown)
+                                                        .setPositiveButton(getString(R.string.okay), null)
+                                                        .setNeutralButton(getString(R.string.open_in_browser), new DialogInterface.OnClickListener() {
+                                                            @Override
+                                                            public void onClick(DialogInterface dialog, int which) {
+                                                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.dsgvo_url)));
+                                                                startActivity(browserIntent);
+                                                            }
+                                                        })
+                                                        .show();
                                             }
                                         })
                                         .show();
                             }
-                        })
-                        .show();
+                            }, new Response.ErrorListener() {
+                    @Override
+                    public void onErrorResponse(VolleyError error) {
+
+                    }
+                });
+
+                queue.add(stringRequest);
             }
         });
+
     }
 
     public void setSearching(boolean searching) {
