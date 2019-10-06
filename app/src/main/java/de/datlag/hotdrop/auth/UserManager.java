@@ -3,9 +3,6 @@ package de.datlag.hotdrop.auth;
 import android.app.Activity;
 import android.util.Log;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
@@ -15,6 +12,8 @@ import com.google.firebase.auth.GetTokenResult;
 
 import org.jetbrains.annotations.NotNull;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import de.interaapps.firebasemanager.auth.AnonymousAuth;
 import de.interaapps.firebasemanager.auth.EmailAuth;
 import de.interaapps.firebasemanager.auth.GoogleAuth;

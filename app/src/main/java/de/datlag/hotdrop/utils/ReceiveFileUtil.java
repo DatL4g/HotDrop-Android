@@ -7,9 +7,6 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.Spanned;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.AppCompatImageView;
-
 import com.adroitandroid.near.model.Host;
 import com.google.android.exoplayer2.ExoPlayerFactory;
 import com.google.android.exoplayer2.SimpleExoPlayer;
@@ -31,6 +28,8 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Objects;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatImageView;
 import de.datlag.hotdrop.R;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;

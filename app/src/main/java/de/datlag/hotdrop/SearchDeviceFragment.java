@@ -8,12 +8,11 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 
-import androidx.fragment.app.Fragment;
-
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 
+import androidx.fragment.app.Fragment;
 import de.datlag.hotdrop.utils.CircularAnimation;
 
 public class SearchDeviceFragment extends Fragment {

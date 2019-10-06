@@ -6,10 +6,9 @@ import android.os.Build;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-
-import androidx.appcompat.app.AlertDialog;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -28,6 +27,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
+import androidx.appcompat.app.AlertDialog;
 import de.datlag.hotdrop.R;
 import de.interaapps.firebasemanager.auth.EmailAuth;
 
@@ -61,7 +61,9 @@ public class InteraAuth {
     public void startLogin(EmailAuth auth, LoginCallback loginCallback) {
         WebView webView = new WebView(activity);
         clearCookies(activity);
-        webView.loadUrl("https://accounts.interaapps.de/oauth/8");
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
+        webView.loadUrl(activity.getString(R.string.intera_auth_url));
         webView.setFocusable(true);
         AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen)
                 .setTitle(null)
@@ -122,19 +124,18 @@ public class InteraAuth {
         webView.requestFocus();
     }
 
-    private static void clearCookies(Context context)
-    {
+    private static void clearCookies(Context context) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
             CookieManager.getInstance().removeAllCookies(null);
             CookieManager.getInstance().flush();
         } else {
-            CookieSyncManager cookieSyncMngr=CookieSyncManager.createInstance(context);
-            cookieSyncMngr.startSync();
+            CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(context);
+            cookieSyncManager.startSync();
             CookieManager cookieManager=CookieManager.getInstance();
             cookieManager.removeAllCookie();
             cookieManager.removeSessionCookie();
-            cookieSyncMngr.stopSync();
-            cookieSyncMngr.sync();
+            cookieSyncManager.stopSync();
+            cookieSyncManager.sync();
         }
     }
 

@@ -3,8 +3,6 @@ package de.datlag.hotdrop.utils;
 import android.app.Activity;
 import android.os.Looper;
 
-import androidx.collection.ArraySet;
-
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.model.Host;
 
@@ -13,6 +11,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.util.ArrayList;
+
+import androidx.collection.ArraySet;
 
 
 public class HostTransfer {

@@ -1,18 +1,32 @@
 <resources>
-    <string name="app_name" translatable="false">HotDrop</string>
-    <string name="open_hotdrop">Open HotDrop on any other devices to send files.</string>
-    <string name="info_text">Easily send files and folders from one device to another.</string>
-    <string name="github_repo">https://github.com/DATL4G/HotDrop-Android</string>
-    <string name="dependencies">Dependencies</string>
-    <string name="about">About</string>
-    <string name="data_protection_title">Privacy Policy</string>
+
+    <!-- BUTTONS -->
     <string name="ok">OK</string>
     <string name="okay">Okay</string>
     <string name="cancel">Cancel</string>
-    <string name="data_protection_text">This is just an example</string>
-    <string name="open_in_browser">Open in Browser</string>
-    <string name="settings">Settings</string>
     <string name="close">Close</string>
+    <string name="open_in_browser">Open in Browser</string>
+
+
+    <!-- INFORMATION PAGE -->
+    <string name="app_name" translatable="false">HotDrop</string>
+    <string name="open_hotdrop">Open HotDrop on any other devices to send files.</string>
+    <string name="info_text">Easily send files and folders from one device to another.</string>
+    <string name="github_repo" translatable="false">https://github.com/DATL4G/HotDrop-Android</string>
+    <string name="dependencies">Dependencies</string>
+    <string name="about">About</string>
+    <string name="data_protection_title">Privacy Policy</string>
+    <string name="dsgvo_url">https://interaapps.de/dsgvo</string>
+
+    <string name="data_protection_text">This is just an example</string>
+
+
+    <!--
+        SETTINGS
+    -->
+    <string name="settings">Settings</string>
+
+    <!-- AUTH TEXTs -->
     <string name="sign_in">Sign in</string>
     <string name="sing_out">Task failed successfully!</string>
     <string name="login_failed">Log in failed! Please try again!</string>
@@ -36,28 +50,39 @@
     <string name="part" translatable="false">part</string>
     <string name="maxParts" translatable="false">maxParts</string>
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <!-- SETTING OPTIONS -->
     <string-array name="available_settings">
         <item>Account</item>
         <item>Connectivity</item>
         <item>Permissions</item>
     </string-array>
+
+    <!-- Sign in Options -->
     <string-array name="sign_in_options">
         <item>Google</item>
         <item>InteraApps Auth</item>
         <item>Github</item>
         <item>Anonymous</item>
     </string-array>
+
+    <!-- PERMISSION TEXTS -->
     <string-array name="permission_info">
         <item>The Location Permission is needed to access your device hardware!</item>
-        <item>YOUR LOCATION IS NEVER FETCHED OR SAVED!</item>
+        <item>Your location wont ever be fetched or saved!</item>
         <item>The Storage Permission is needed to access your files and folders.</item>
         <item>Without this permission you are unable to upload or download any file or folder.</item>
     </string-array>
     <string-array name="permission_not_granted">
-        <item>Needed Permissions are not granted!</item>
+        <item>Required permissions are not granted!</item>
         <item>App won\'t work without these Permissions!</item>
     </string-array>
     <string name="not_granted">Not granted</string>
     <string name="location_storage">Location and Storage</string>
+
+    <!-- InteraApps Auth URLs -->
     <string name="intera_user_url" translatable="false">https://auth.hotdrop.interaapps.de/auth/v1/getuser/</string>
+    <string name="intera_auth_url" translatable="false">https://accounts.interaapps.de/iaauth/8</string>
+
+    <!-- LINKS -->
 </resources>
