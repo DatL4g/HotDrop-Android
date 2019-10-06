@@ -5,15 +5,14 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.adroitandroid.near.model.Host;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.Set;
 
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.recyclerview.widget.RecyclerView;
 import de.datlag.hotdrop.R;
 
 public class ChooseHostRecyclerAdapter extends RecyclerView.Adapter<ChooseHostRecyclerAdapter.ViewHolder> {

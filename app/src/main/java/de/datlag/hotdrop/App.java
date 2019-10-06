@@ -1,7 +1,6 @@
 package de.datlag.hotdrop;
 
 import androidx.multidex.MultiDexApplication;
-
 import io.github.inflationx.calligraphy3.CalligraphyConfig;
 import io.github.inflationx.calligraphy3.CalligraphyInterceptor;
 import io.github.inflationx.viewpump.ViewPump;

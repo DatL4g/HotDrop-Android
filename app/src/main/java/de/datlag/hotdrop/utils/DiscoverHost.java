@@ -5,8 +5,6 @@ import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Looper;
 
-import androidx.annotation.NonNull;
-
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
 import com.adroitandroid.near.model.Host;
@@ -17,6 +15,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
+import androidx.annotation.NonNull;
 import de.datlag.hotdrop.ChooseDeviceFragment;
 import de.datlag.hotdrop.MainActivity;
 import de.datlag.hotdrop.R;

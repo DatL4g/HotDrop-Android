@@ -6,13 +6,11 @@ import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
 
-import androidx.appcompat.app.ActionBar;
-import androidx.appcompat.widget.Toolbar;
-
 import com.google.android.material.appbar.AppBarLayout;
 
 import org.jetbrains.annotations.NotNull;
 
+import androidx.appcompat.app.ActionBar;
 import io.codetail.animation.ViewAnimationUtils;
 
 public class InfoPageManager {
