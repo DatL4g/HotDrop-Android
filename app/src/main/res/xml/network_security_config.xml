@@ -8,5 +8,6 @@
         <domain includeSubdomains="true">iaauth://inteaapps/login</domain>
         <domain includeSubdomains="true">https://auth.hotdrop.interaapps.de/auth/</domain>
         <domain includeSubdomains="true">auth.hotdrop.interaapps.de/auth/</domain>
+        <domain includeSubdomains="true">https://github.com/DATL4G/HotDrop-Android</domain>
     </domain-config>
 </network-security-config>
