@@ -6,6 +6,7 @@ import android.os.Build;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
@@ -61,6 +62,8 @@ public class InteraAuth {
     public void startLogin(EmailAuth auth, LoginCallback loginCallback) {
         WebView webView = new WebView(activity);
         clearCookies(activity);
+        WebSettings webSettings = webView.getSettings();
+        webSettings.setJavaScriptEnabled(true);
         webView.loadUrl("https://accounts.interaapps.de/oauth/8");
         webView.setFocusable(true);
         AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen)
