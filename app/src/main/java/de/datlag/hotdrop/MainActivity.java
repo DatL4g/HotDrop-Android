@@ -61,6 +61,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import de.datlag.hotdrop.firebase.StorageManager;
+import de.datlag.hotdrop.handler.InfoHandler;
 import de.datlag.hotdrop.utils.DiscoverHost;
 import de.datlag.hotdrop.utils.FileUtil;
 import de.datlag.hotdrop.utils.InfoPageManager;
@@ -302,51 +303,11 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         });
 
 
-        final String mURL = getString(R.string.dsgvo_url)+"?viaJS=true";
-        RequestQueue queue = Volley.newRequestQueue(activity);
-
         helpIcon.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Snackbar snackbar = Snackbar.make(((MainActivity) activity).getCoordinatorLayout(), "Loading...", Snackbar.LENGTH_LONG);
-                ((MainActivity) activity).showSnackbar(snackbar);
-                StringRequest stringRequest = new StringRequest(Request.Method.GET, mURL,
-                        new Response.Listener<String>() {
-                            @Override
-                            public void onResponse(String response) {
-                                final Spanned markdown = markwon.toMarkdown(response);
-                                new MaterialAlertDialogBuilder(activity)
-                                        .setTitle("Info App / Creator")
-                                        .setMessage("All information...")
-                                        .setPositiveButton(getString(R.string.okay), null)
-                                        .setNeutralButton(getString(R.string.data_protection_title), new DialogInterface.OnClickListener() {
-                                            @Override
-                                            public void onClick(DialogInterface dialog, int which) {
-
-                                                new MaterialAlertDialogBuilder(activity)
-                                                        .setTitle(getString(R.string.data_protection_title))
-                                                        .setMessage(markdown)
-                                                        .setPositiveButton(getString(R.string.okay), null)
-                                                        .setNeutralButton(getString(R.string.open_in_browser), new DialogInterface.OnClickListener() {
-                                                            @Override
-                                                            public void onClick(DialogInterface dialog, int which) {
-                                                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.dsgvo_url)));
-                                                                startActivity(browserIntent);
-                                                            }
-                                                        })
-                                                        .show();
-                                            }
-                                        })
-                                        .show();
-                            }
-                            }, new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
-
-                    }
-                });
-
-                queue.add(stringRequest);
+                InfoHandler infoHandler = new InfoHandler(activity);
+                infoHandler.informationPage();
             }
         });
 
