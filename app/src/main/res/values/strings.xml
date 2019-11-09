@@ -21,9 +21,7 @@
     <string name="data_protection_text">This is just an example</string>
 
 
-    <!--
-        SETTINGS
-    -->
+    <!-- SETTINGS -->
     <string name="settings">Settings</string>
 
     <!-- AUTH TEXTs -->
@@ -83,6 +81,27 @@
     <!-- InteraApps Auth URLs -->
     <string name="intera_user_url" translatable="false">https://auth.hotdrop.interaapps.de/auth/v1/getuser/</string>
     <string name="intera_auth_url" translatable="false">https://accounts.interaapps.de/iaauth/8</string>
+    <string name="intera_request_url" translatable="false">iaauth://inteaapps/login?</string>
+
+    <!-- InteraApps Split Strings -->
+    <string name="intera_split_password" translatable="false">password=</string>
+    <string name="intera_split_mail" translatable="false">mail=</string>
 
     <!-- LINKS -->
+    <string name="utc_date_url" translatable="false">http://worldtimeapi.org/api/timezone/Etc/UTC</string>
+
+    <!-- Dependencies -->
+    <string-array name="dependencies">
+        <item>Dexter</item>
+        <item>FirebaseManager</item>
+        <item>Calligraphy</item>
+        <item>ViewPump</item>
+        <item>CircularReveal</item>
+        <item>Floating Action Button Speed Dial</item>
+        <item>Glide</item>
+        <item>Near</item>
+        <item>Markwon</item>
+        <item>android-file-chooser</item>
+        <item>ZIP</item>
+    </string-array>
 </resources>
