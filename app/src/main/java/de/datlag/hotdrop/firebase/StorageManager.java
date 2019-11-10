@@ -200,7 +200,6 @@ public class StorageManager {
 
     public void downloadFile(String docId){
 
-        Log.d("ROFL", "uploadData/normal/" + getUser().getUid());
         firebaseFirestore.collection("uploadData/normal/" + getUser().getUid()).document(docId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
             @Override
             public void onComplete(@NonNull Task<DocumentSnapshot> task) {
@@ -222,7 +221,6 @@ public class StorageManager {
                                 storageReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                                     @Override
                                     public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
-                                        Log.d("ASD", taskSnapshot.toString());
                                     }
                                 });
                         });
