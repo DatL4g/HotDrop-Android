@@ -51,7 +51,6 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
         }
     }
 
-    @Override
     public void onAttach(Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
@@ -62,7 +61,6 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
         }
     }
 
-    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -105,7 +103,6 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
         recyclerView.setAdapter(adapter);
     }
 
-    @Override
     public void onItemClick(View view, int position) {
         Log.e("Item", ((Host) mHosts.toArray()[position]).getName());
         if (mListener != null) {

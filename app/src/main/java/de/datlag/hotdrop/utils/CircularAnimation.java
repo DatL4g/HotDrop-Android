@@ -17,12 +17,10 @@ public class CircularAnimation extends Animation {
         this.r = r;
     }
 
-    @Override
     public boolean willChangeBounds() {
         return false;
     }
 
-    @Override
     public void initialize(int width, int height, int parentWidth, int parentHeight) {
         int cxImage = width / 2;
         int cyImage = height / 2;
@@ -33,7 +31,6 @@ public class CircularAnimation extends Animation {
         prevY = cy;
     }
 
-    @Override
     protected void applyTransformation(float interpolatedTime, Transformation t) {
         if(interpolatedTime == 0){
             t.getMatrix().setTranslate(prevDx, prevDy);
@@ -47,7 +44,6 @@ public class CircularAnimation extends Animation {
         float x = (float) (cx + r * Math.cos(angleRad));
         float y = (float) (cy + r * Math.sin(angleRad));
 
-
         float dx = prevX - x;
         float dy = prevY - y;
 
@@ -56,7 +52,6 @@ public class CircularAnimation extends Animation {
 
         prevDx = dx;
         prevDy = dy;
-
 
         t.getMatrix().setTranslate(dx, dy);
     }

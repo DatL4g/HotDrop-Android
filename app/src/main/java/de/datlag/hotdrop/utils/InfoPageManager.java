@@ -2,6 +2,7 @@ package de.datlag.hotdrop.utils;
 
 import android.animation.Animator;
 import android.os.Build;
+import android.util.SparseArray;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.FrameLayout;
@@ -9,6 +10,8 @@ import android.widget.FrameLayout;
 import com.google.android.material.appbar.AppBarLayout;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.util.HashMap;
 
 import androidx.appcompat.app.ActionBar;
 import io.codetail.animation.ViewAnimationUtils;

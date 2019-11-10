@@ -206,18 +206,12 @@ public class DiscoverHost {
             case MESSAGE_REQUEST_START_TRANSFER:
                 new MaterialAlertDialogBuilder(activity)
                         .setMessage(senderName + activity.getString(R.string.want2connect))
-                        .setPositiveButton(activity.getString(R.string.start), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
-                                nearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
-                                stopDiscoveryAndStartTransfer(sender);
-                            }
+                        .setPositiveButton(activity.getString(R.string.start), (dialog, which) -> {
+                            nearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
+                            stopDiscoveryAndStartTransfer(sender);
                         })
-                        .setNegativeButton(activity.getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialog, int which) {
+                        .setNegativeButton(activity.getString(R.string.cancel), (DialogInterface dialog, int which) -> {
                                 nearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
-                            }
                         }).create().show();
                 break;
             case MESSAGE_RESPONSE_DECLINE_REQUEST:
@@ -235,8 +229,7 @@ public class DiscoverHost {
         nearConnect.stopReceiving(false);
         nearDiscovery.stopDiscovery();
         transferFragment = new TransferFragment(activity, host);
-        if (activity instanceof MainActivity) {
+        if (activity instanceof MainActivity)
             ((MainActivity) activity).switch2Fragment(transferFragment);
-        }
     }
 }

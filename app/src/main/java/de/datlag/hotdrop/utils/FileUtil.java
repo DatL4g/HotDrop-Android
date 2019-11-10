@@ -85,7 +85,11 @@ public class FileUtil {
                 .withChosenListener(new ChooserDialog.Result() {
                     @Override
                     public void onChoosePath(String path, File pathFile) {
-                        folderChooseCallback.onChosen(path, pathFile);
+                        try {
+                            folderChooseCallback.onChosen(path, pathFile);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                     }
                 })
                 // to handle the back key pressed or clicked outside the dialog:
@@ -101,17 +105,12 @@ public class FileUtil {
     public static void chooseFile(Activity activity, String startingPath, FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withStartFile(startingPath)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String path, File pathFile) {
+                .withChosenListener((path, pathFile) -> {
                         fileChooseCallback.onChosen(path, pathFile);
-                    }
                 })
                 // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
+                .withOnCancelListener((dialog) -> {
                         dialog.cancel();
-                    }
                 })
                 .build()
                 .show();
@@ -121,17 +120,16 @@ public class FileUtil {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withFilter(true, false)
                 .withStartFile(startingPath)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String path, File pathFile) {
-                        folderChooseCallback.onChosen(path, pathFile);
-                    }
+                .withChosenListener((String path, File pathFile) -> {
+                        try {
+                            folderChooseCallback.onChosen(path, pathFile);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
                 })
                 // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
+                .withOnCancelListener((dialog) -> {
                         dialog.cancel();
-                    }
                 })
                 .build()
                 .show();
@@ -140,25 +138,17 @@ public class FileUtil {
     public static void chooseAny(Activity activity, AnyChooseCallback anyChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withFilter(false, true)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String dir, File dirFile) {
+                .withChosenListener((String dir, File dirFile) -> {
                         if (isFile(dir)) {
                             anyChooseCallback.onChosenFile(dir, dirFile);
                         } else if (isDirectory(dir)) {
                             anyChooseCallback.onChosenFolder(dir, dirFile);
                         }
-                    }
                 })
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    @Override
-                    public void onCancel(DialogInterface dialogInterface) {
+                .withOnCancelListener((dialogInterface) -> {
                         dialogInterface.cancel();
-                    }
                 })
-                .withNegativeButton("Choose Folder", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
+                .withNegativeButton("Choose Folder", (dialogInterface, i) -> {
                         new ChooserDialog.Result() {
                             @Override
                             public void onChoosePath(String dir, File dirFile) {
@@ -169,7 +159,6 @@ public class FileUtil {
                                 }
                             }
                         };
-                    }
                 })
                 .build().show();
     }

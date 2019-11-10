@@ -33,9 +33,7 @@ public class SearchDeviceFragment extends Fragment {
         return fragment;
     }
 
-    @Override
-    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_search_device, container, false);
         initialize();
         initializeLogic();
@@ -59,7 +57,6 @@ public class SearchDeviceFragment extends Fragment {
         }
     }
 
-    @Override
     public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
@@ -70,7 +67,6 @@ public class SearchDeviceFragment extends Fragment {
         }
     }
 
-    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;
@@ -81,14 +77,11 @@ public class SearchDeviceFragment extends Fragment {
     }
 
     private void initializeLogic() {
-        searchFAB.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+        searchFAB.setOnClickListener((View view) -> {
                 if (mListener != null) {
                     setSearch(!search);
                     mListener.onSearchFragmentInteraction(search);
                 }
-            }
         });
     }
 

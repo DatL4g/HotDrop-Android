@@ -64,12 +64,9 @@ public class ChooseHostRecyclerAdapter extends RecyclerView.Adapter<ChooseHostRe
         String deviceUserName = hostName.substring(hostName.indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
         holder.deviceName.setText(deviceUserName);
 
-        holder.deviceContainer.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean b) {
-                if (b) {
-                    holder.deviceFAB.requestFocus();
-                }
+        holder.deviceContainer.setOnFocusChangeListener((View view, boolean b) -> {
+            if (b) {
+                holder.deviceFAB.requestFocus();
             }
         });
     }

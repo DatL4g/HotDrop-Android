@@ -27,11 +27,8 @@ public class AuthSettings {
     public void providerDialog(ProviderCallback providerCallback) {
         new MaterialAlertDialogBuilder(activity)
                 .setTitle("Provider")
-                .setItems(signInArray, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        providerCallback.onChosen(i);
-                    }
+                .setItems(signInArray, (DialogInterface dialogInterface, int i) -> {
+                    providerCallback.onChosen(i);
                 })
                 .setPositiveButton(activity.getString(R.string.cancel), null)
                 .create().show();
@@ -45,26 +42,18 @@ public class AuthSettings {
                         .setTitle("Account")
                         .setMessage("Logged in as "+username)
                         .setPositiveButton(activity.getString(R.string.okay), null)
-                        .setNeutralButton("Logout", new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(DialogInterface dialogInterface, int i) {
+                        .setNeutralButton("Logout", (DialogInterface dialogInterface, int i) -> {
                                 userManager.logout(new UserManager.LogoutCallback() {
-                                    @Override
                                     public void onLogoutSuccess() {
-
                                     }
 
-                                    @Override
                                     public void onLogoutFailed() {
-
                                     }
                                 });
-                            }
                         })
                         .create().show();
             }
 
-            @Override
             public void onFailed(Exception exception) {
 
             }

@@ -108,65 +108,43 @@ public class ReceiveFileUtil {
         AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity)
                 .setTitle(name)
                 .setMessage(markdown)
-                .setPositiveButton(activity.getString(R.string.choose_destination), new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        FileUtil.chooseFolder(activity, new FileUtil.FolderChooseCallback() {
-                            @Override
-                            public void onChosen(String path, File file) {
-                                FileUtil.createFile(path, name);
-                                FileUtil.writeBytesToFile(bytes, path+File.separator+name);
-                            }
-                        });
-                    }
-                })
+                .setPositiveButton(activity.getString(R.string.choose_destination), (dialogInterface, i) -> FileUtil.chooseFolder(activity, (path1, file) -> {
+                    FileUtil.createFile(path1, name);
+                    FileUtil.writeBytesToFile(bytes, path1 +File.separator+name);
+                }))
                 .setNegativeButton(activity.getString(R.string.decline), null)
                 .create();
 
         if (MimeTypes.isImage(mimeType) && MimeTypes.isImage(detectedMimeType)) {
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Preview", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    AppCompatImageView appCompatImageView = new AppCompatImageView(activity);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
-                    appCompatImageView.setImageBitmap(bitmap);
-                    alertDialog.cancel();
-                    new MaterialAlertDialogBuilder(activity)
-                            .setTitle("Preview")
-                            .setPositiveButton(activity.getString(R.string.close), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    alertDialog.show();
-                                }
-                            })
-                            .setView(appCompatImageView)
-                            .create().show();
-                }
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Preview", (dialogInterface, i) -> {
+                AppCompatImageView appCompatImageView = new AppCompatImageView(activity);
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                appCompatImageView.setImageBitmap(bitmap);
+                alertDialog.cancel();
+                new MaterialAlertDialogBuilder(activity)
+                        .setTitle("Preview")
+                        .setPositiveButton(activity.getString(R.string.close), (dialogInterface1, i1) -> alertDialog.show())
+                        .setView(appCompatImageView)
+                        .create().show();
             });
         } else if (MimeTypes.isVideo(mimeType) || MimeTypes.isAudio(mimeType)) {
-            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Preview", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-                    PlayerView playerView = new PlayerView(activity);
-                    SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(activity);
-                    player.prepare(createMediaSourceFromByteArray(bytes));
-                    playerView.setPlayer(player);
-                    player.setPlayWhenReady(true);
+            alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Preview", (dialogInterface, i) -> {
+                PlayerView playerView = new PlayerView(activity);
+                SimpleExoPlayer player = ExoPlayerFactory.newSimpleInstance(activity);
+                player.prepare(createMediaSourceFromByteArray(bytes));
+                playerView.setPlayer(player);
+                player.setPlayWhenReady(true);
 
-                    alertDialog.cancel();
-                    new MaterialAlertDialogBuilder(activity)
-                            .setTitle("Preview")
-                            .setPositiveButton(activity.getString(R.string.close), new DialogInterface.OnClickListener() {
-                                @Override
-                                public void onClick(DialogInterface dialogInterface, int i) {
-                                    alertDialog.show();
-                                    player.release();
-                                    player.stop(true);
-                                }
-                            })
-                            .setView(playerView)
-                            .create().show();
-                }
+                alertDialog.cancel();
+                new MaterialAlertDialogBuilder(activity)
+                        .setTitle("Preview")
+                        .setPositiveButton(activity.getString(R.string.close), (dialogInterface12, i12) -> {
+                            alertDialog.show();
+                            player.release();
+                            player.stop(true);
+                        })
+                        .setView(playerView)
+                        .create().show();
             });
         }
 
