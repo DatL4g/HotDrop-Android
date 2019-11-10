@@ -33,6 +33,7 @@ public class SearchDeviceFragment extends Fragment {
         return fragment;
     }
 
+    @Override
     public View onCreateView(@NotNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         rootView = inflater.inflate(R.layout.fragment_search_device, container, false);
         initialize();
@@ -57,6 +58,7 @@ public class SearchDeviceFragment extends Fragment {
         }
     }
 
+    @Override
     public void onAttach(@NotNull Context context) {
         super.onAttach(context);
         if (context instanceof OnFragmentInteractionListener) {
@@ -67,6 +69,7 @@ public class SearchDeviceFragment extends Fragment {
         }
     }
 
+    @Override
     public void onDetach() {
         super.onDetach();
         mListener = null;

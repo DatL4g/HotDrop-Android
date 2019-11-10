@@ -54,6 +54,7 @@ public class AuthSettings {
                         .create().show();
             }
 
+            @Override
             public void onFailed(Exception exception) {
 
             }

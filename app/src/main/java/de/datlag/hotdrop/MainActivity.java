@@ -114,10 +114,12 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private DiscoverHost discoverHost;
     public SearchDeviceFragment searchDeviceFragment;
 
+    @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
     }
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -309,10 +311,10 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                             settingsManager.switchSettings(0);
                     }).setNegativeButton(getString(R.string.cancel), (DialogInterface dialogInterface, int i) -> {
                         // ToDo: INSERT
-                    })
-                    .create().show();
+                    }).create().show();
         } else {
             storageManager.startUploadFile(firebaseUser.isAnonymous(), new StorageManager.FileUploadCallback() {
+                @Override
                 public void onSuccess(String downbloadUri) {
                     if (firebaseUser.isAnonymous()) {
                         new MaterialAlertDialogBuilder(activity)
@@ -324,8 +326,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                                     sendIntent.putExtra(Intent.EXTRA_TEXT, downbloadUri);
                                     sendIntent.setType("text/plain");
                                     startActivity(Intent.createChooser(sendIntent, "Share URL"));
-                                })
-                                .setNeutralButton("Copy Link", (dialogInterface, i) -> {
+                                }).setNeutralButton("Copy Link", (dialogInterface, i) -> {
                                     ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
                                     ClipData clip = ClipData.newPlainText("DownloadUrl", downbloadUri);
                                     clipboard.setPrimaryClip(clip);
@@ -351,11 +352,10 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         final CoordinatorLayout.LayoutParams params = (CoordinatorLayout.LayoutParams) snackBarView.getLayoutParams();
         final TextView snackBarText = snackBarView.findViewById(com.google.android.material.R.id.snackbar_text);
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
             snackBarText.setTextAlignment(View.TEXT_ALIGNMENT_CENTER);
-        } else {
+        else
             snackBarText.setGravity(Gravity.CENTER_HORIZONTAL);
-        }
         snackBarText.setTypeface(snackBarText.getTypeface(), Typeface.BOLD);
 
         params.setMargins(params.leftMargin + (int) activity.getResources().getDimension(R.dimen.snackbar_margin),
@@ -379,6 +379,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         return FirebaseAuth.getInstance().getCurrentUser();
     }
 
+    @Override
     public void onSearchFragmentInteraction(boolean search) {
         if (search)
             discoverHost.startDiscovery();
@@ -386,10 +387,12 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             discoverHost.stopDiscovery();
     }
 
+    @Override
     public void onChooseFragmentInteraction(Host host) {
         discoverHost.send(host, DiscoverHost.MESSAGE_REQUEST_START_TRANSFER.getBytes());
     }
 
+    @Override
     protected void onStart() {
         super.onStart();
         if (firebaseManager != null) {
@@ -397,30 +400,36 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         }
     }
 
+    @Override
     protected void onStop() {
         super.onStop();
         discoverHost.stopDiscovery();
     }
 
+    @Override
     protected void onDestroy() {
         super.onDestroy();
         discoverHost.stopDiscovery();
         activity.finish();
     }
 
+    @Override
     protected void onResume() {
         super.onResume();
     }
 
+    @Override
     protected void onPause() {
         super.onPause();
     }
 
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         googleAuth.onActivityResult(requestCode, resultCode, data);
     }
 
+    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
