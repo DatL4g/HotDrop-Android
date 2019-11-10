@@ -67,15 +67,18 @@ import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.html.HtmlPlugin;
+import lombok.Getter;
 
 public class MainActivity extends AppCompatActivity implements SearchDeviceFragment.OnFragmentInteractionListener, ChooseDeviceFragment.OnFragmentInteractionListener {
 
+    @Getter
     public static MainActivity instance;
 
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
     }
 
+    @Getter
     private Activity activity;
     private CoordinatorLayout coordinatorLayout;
     private AppBarLayout appBarLayout;
@@ -99,6 +102,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private ArrayList<SpeedDialActionItem> menuItems = new ArrayList<>();
 
     private SettingsManager settingsManager;
+    @Getter
     private FirebaseManager firebaseManager;
     private GoogleAuth googleAuth;
     private EmailAuth emailAuth;
@@ -109,12 +113,10 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private DiscoverHost discoverHost;
     public SearchDeviceFragment searchDeviceFragment;
 
-    @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(ViewPumpContextWrapper.wrap(newBase));
     }
 
-    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
@@ -167,11 +169,8 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
                         new MaterialAlertDialogBuilder(activity)
                                 .setTitle(getString(R.string.location_storage))
                                 .setMessage(message)
-                                .setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
+                                .setPositiveButton(getString(R.string.okay), (DialogInterface dialogInterface, int i) -> {
                                         token.continuePermissionRequest();
-                                    }
                                 })
                                 .create().show();
                     }
@@ -242,57 +241,38 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         infoPageManager = new InfoPageManager();
         infoPageManager.setLayouts(mainLayout, infoLayout, appBarLayout, getSupportActionBar());
 
-        revealButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        revealButton.setOnClickListener((View v) -> {
                 infoPageManager.startAnimation(false);
-            }
         });
 
-        reverseRevealButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        reverseRevealButton.setOnClickListener((View v) -> {
                 infoPageManager.startAnimation(true);
-            }
         });
 
-        speedDialView.setOnActionSelectedListener(new SpeedDialView.OnActionSelectedListener() {
-            @Override
-            public boolean onActionSelected(SpeedDialActionItem actionItem) {
+        speedDialView.setOnActionSelectedListener((SpeedDialActionItem actionItem) -> {
                 if (actionItem.getId() == uploadID) {
                     uploadCloud();
                 } else if (actionItem.getId() == downloadID) {
                     //download
                 }
-
                 return false;
-            }
         });
 
-        tuneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        tuneButton.setOnClickListener((View v) -> {
                 settingsManager.open();
-            }
         });
 
-        githubIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        githubIcon.setOnClickListener((View v) -> {
                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.github_repo)));
                 startActivity(browserIntent);
-            }
         });
 
-        codeIcon.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        codeIcon.setOnClickListener((View v) -> {
                 new MaterialAlertDialogBuilder(activity)
                         .setTitle(getString(R.string.dependencies))
                         .setItems(activity.getResources().getStringArray(R.array.dependencies), null)
                         .setPositiveButton(getString(R.string.okay), null)
                         .show();
-            }
         });
 
 
@@ -326,44 +306,30 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             new MaterialAlertDialogBuilder(activity)
                     .setTitle(getString(R.string.account))
                     .setMessage(getString(R.string.upload_info))
-                    .setPositiveButton(getString(R.string.okay), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
+                    .setPositiveButton(getString(R.string.okay), (DialogInterface dialogInterface, int i) -> {
                             settingsManager.switchSettings(0);
-                        }
-                    })
-                    .setNegativeButton(getString(R.string.cancel), new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-
-                        }
+                    }).setNegativeButton(getString(R.string.cancel), (DialogInterface dialogInterface, int i) -> {
+                        // ToDo: INSERT
                     })
                     .create().show();
         } else {
             storageManager.startUploadFile(firebaseUser.isAnonymous(), new StorageManager.FileUploadCallback() {
-                @Override
                 public void onSuccess(String downbloadUri) {
                     if (firebaseUser.isAnonymous()) {
                         new MaterialAlertDialogBuilder(activity)
                                 .setTitle("File uploaded")
                                 .setMessage("Please share this link, otherwise you cannot Download this file or have any access to it")
-                                .setPositiveButton("Share", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        Intent sendIntent = new Intent(Intent.ACTION_SEND);
-                                        sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Get this file from HotDrop!");
-                                        sendIntent.putExtra(Intent.EXTRA_TEXT, downbloadUri);
-                                        sendIntent.setType("text/plain");
-                                        startActivity(Intent.createChooser(sendIntent, "Share URL"));
-                                    }
+                                .setPositiveButton("Share", (dialogInterface, i) -> {
+                                    Intent sendIntent = new Intent(Intent.ACTION_SEND);
+                                    sendIntent.putExtra(Intent.EXTRA_SUBJECT, "Get this file from HotDrop!");
+                                    sendIntent.putExtra(Intent.EXTRA_TEXT, downbloadUri);
+                                    sendIntent.setType("text/plain");
+                                    startActivity(Intent.createChooser(sendIntent, "Share URL"));
                                 })
-                                .setNeutralButton("Copy Link", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-                                        ClipData clip = ClipData.newPlainText("DownloadUrl", downbloadUri);
-                                        clipboard.setPrimaryClip(clip);
-                                    }
+                                .setNeutralButton("Copy Link", (dialogInterface, i) -> {
+                                    ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                                    ClipData clip = ClipData.newPlainText("DownloadUrl", downbloadUri);
+                                    clipboard.setPrimaryClip(clip);
                                 })
                                 .create().show();
                     } else {
@@ -408,29 +374,23 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
 
     private FirebaseUser getUser() {
         for (Auth auth : firebaseManager.getLogin()) {
-            if (auth.getUser() != null) {
+            if (auth.getUser() != null)
                 return auth.getUser();
-            }
         }
-
         return FirebaseAuth.getInstance().getCurrentUser();
     }
 
-    @Override
     public void onSearchFragmentInteraction(boolean search) {
-        if (search) {
+        if (search)
             discoverHost.startDiscovery();
-        } else {
+        else
             discoverHost.stopDiscovery();
-        }
     }
 
-    @Override
     public void onChooseFragmentInteraction(Host host) {
         discoverHost.send(host, DiscoverHost.MESSAGE_REQUEST_START_TRANSFER.getBytes());
     }
 
-    @Override
     protected void onStart() {
         super.onStart();
         if (firebaseManager != null) {
@@ -438,50 +398,33 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         }
     }
 
-    @Override
     protected void onStop() {
         super.onStop();
         discoverHost.stopDiscovery();
     }
 
-    @Override
     protected void onDestroy() {
         super.onDestroy();
         discoverHost.stopDiscovery();
         activity.finish();
     }
 
-    @Override
     protected void onResume() {
         super.onResume();
     }
 
-    @Override
     protected void onPause() {
         super.onPause();
     }
 
-    @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         googleAuth.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
-    public FirebaseManager getFirebaseManager() {
-        return firebaseManager;
-    }
-
-    public Activity getActivity() {
-        return activity;
-    }
-
-    public static MainActivity getInstance() {
-        return instance;
-    }
 
 }

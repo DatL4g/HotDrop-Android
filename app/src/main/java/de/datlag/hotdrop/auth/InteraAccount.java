@@ -3,14 +3,34 @@ package de.datlag.hotdrop.auth;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 
+import lombok.Getter;
+import lombok.Setter;
+
 public class InteraAccount {
 
+    @Getter
     private String response;
+
     private JsonObject object;
+
+    @Getter
+    @Setter
     private String username;
+
+    @Getter
+    @Setter
     private boolean error = true;
+
+    @Getter
+    @Setter
     private String email;
+
+    @Getter
+    @Setter
     private String description;
+
+    @Getter
+    @Setter
     private boolean verified = false;
 
     public InteraAccount(String response) {
@@ -28,50 +48,6 @@ public class InteraAccount {
             setDescription(object.get("description").getAsString());
             setVerified(object.get("verified").getAsBoolean());
         }
-    }
-
-    public String getResponse() {
-        return this.response;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getUsername() {
-        return this.username;
-    }
-
-    public void setError(boolean error) {
-        this.error = error;
-    }
-
-    public boolean getError() {
-        return this.error;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getEmail() {
-        return this.email;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public String getDescription() {
-        return this.description;
-    }
-
-    public void setVerified(boolean verified) {
-        this.verified = verified;
-    }
-
-    public boolean getVerified() {
-        return this.verified;
     }
 
 }

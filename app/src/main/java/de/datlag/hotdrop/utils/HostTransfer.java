@@ -67,24 +67,20 @@ public class HostTransfer {
     @Contract(value = " -> new", pure = true)
     private NearConnect.Listener getNearConnectListener() {
         return new NearConnect.Listener() {
-            @Override
             public void onReceive(byte[] bytes, final Host sender) {
                 if (bytes != null) {
                     receiveFileUtil.onReceive(host, bytes);
                 }
             }
 
-            @Override
             public void onSendComplete(long jobId) {
 
             }
 
-            @Override
             public void onSendFailure(Throwable e, long jobId) {
 
             }
 
-            @Override
             public void onStartListenFailure(Throwable e) {
                 // This tells that the NearConnect.startReceiving() didn't go through properly.
                 // Common cause would be that another instance of NearConnect is already listening and it's NearConnect.stopReceiving() needs to be called first

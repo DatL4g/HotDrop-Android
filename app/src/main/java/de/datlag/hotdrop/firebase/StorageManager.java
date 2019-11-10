@@ -36,6 +36,10 @@ import de.datlag.hotdrop.utils.FileUtil;
 import de.interaapps.firebasemanager.core.FirebaseManager;
 import de.interaapps.firebasemanager.core.auth.Auth;
 
+/*
+* TODO: Clean the fucking file.
+* */
+
 public class StorageManager {
     private Activity activity;
     private FirebaseManager firebaseManager;
@@ -147,18 +151,10 @@ public class StorageManager {
         }
 
         UploadTask uploadTask = uploadRef.putFile(Uri.fromFile(file));
-        uploadTask.addOnSuccessListener(activity, new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                updateDBEntry(uploadRef, docID, isAnonym, fileUploadCallback);
-            }
-        })
-        .addOnFailureListener(activity, new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                fileUploadCallback.onFailure(e);
-            }
-        });
+        uploadTask.addOnSuccessListener(activity, taskSnapshot -> updateDBEntry(uploadRef, docID, isAnonym, fileUploadCallback))
+        .addOnFailureListener(activity, e -> {
+            fileUploadCallback.onFailure(e);
+        } );
     }
 
     private void updateDBEntry(@NotNull StorageReference storageReference, String docId, boolean isAnonym, FileUploadCallback fileUploadCallback) {
@@ -168,18 +164,11 @@ public class StorageManager {
 
         if (isAnonym) {
             firebaseFirestore.collection("uploadData/anonym/anonymDocs")
-                    .document(docId).update(updateData).addOnSuccessListener(activity, new OnSuccessListener<Void>() {
-                @Override
-                public void onSuccess(Void aVoid) {
-                    fileUploadCallback.onSuccess(storageReference.toString());
-                }
-            })
-            .addOnFailureListener(activity, new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+            .document(docId).update(updateData).addOnSuccessListener(activity, aVoid -> {
+                fileUploadCallback.onSuccess(storageReference.toString());
+            }).addOnFailureListener(activity, e -> {
                     fileUploadCallback.onFailure(e);
-                }
-            });
+                });
         } else {
             firebaseFirestore.collection("uploadData/normal/" + getUser().getUid())
                     .document(docId).update(updateData).addOnSuccessListener(activity, new OnSuccessListener<Void>() {
@@ -188,18 +177,14 @@ public class StorageManager {
                     fileUploadCallback.onSuccess(storageReference.toString());
                 }
             })
-            .addOnFailureListener(activity, new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
+            .addOnFailureListener(activity, (@NonNull Exception e) -> {
                     fileUploadCallback.onFailure(e);
-                }
             });
         }
     }
 
     @NotNull
-    private String randomString(int sizeOfRandomString)
-    {
+    private String randomString(int sizeOfRandomString) {
         String allowedChars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
         Random random = new Random();
         StringBuilder sb = new StringBuilder(sizeOfRandomString);
@@ -210,7 +195,6 @@ public class StorageManager {
 
     public interface FileUploadCallback{
         void onSuccess(String url);
-
         void onFailure(Exception exception);
     }
 
@@ -224,15 +208,16 @@ public class StorageManager {
                     DocumentSnapshot document = task.getResult();
 
                     if (document.exists()) {
-                        FileUtil.chooseFolder(activity, null, new FileUtil.FolderChooseCallback(){
-
-                            @Override
-                            public void onChosen(String path, File file)  {
+                        FileUtil.chooseFolder(activity, null, (String path, File file) -> {
                                 Map<String, Object> fileData = document.getData();
                                 StorageReference storageReference = firebaseStorage.getReferenceFromUrl(fileData.get("FileUrl").toString());
 
-                                File localFile;
-                                localFile = File.createTempFile(path+"/"+fileData.get("FileName").toString().replaceAll("."+fileData.get("FileExtension").toString(), "") , fileData.get("FileExtension").toString() );
+                                File localFile = null;
+                                try {
+                                    localFile = File.createTempFile(path+"/"+fileData.get("FileName").toString().replaceAll("."+fileData.get("FileExtension").toString(), "") , fileData.get("FileExtension").toString() );
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
 
                                 storageReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
                                     @Override
@@ -240,14 +225,12 @@ public class StorageManager {
                                         Log.d("ASD", taskSnapshot.toString());
                                     }
                                 });
-                            }
                         });
                     } else
                         Log.d("TAG", "No such document");
 
                 } else
                     Log.d("TAG", "get failed with ", task.getException());
-
             }
         });
     }
