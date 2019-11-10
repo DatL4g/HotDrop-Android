@@ -2,16 +2,21 @@ package de.datlag.hotdrop.firebase;
 
 import android.app.Activity;
 import android.net.Uri;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.storage.FileDownloadTask;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -21,10 +26,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
+import de.datlag.hotdrop.MainActivity;
 import de.datlag.hotdrop.utils.FileUtil;
 import de.interaapps.firebasemanager.core.FirebaseManager;
 import de.interaapps.firebasemanager.core.auth.Auth;
@@ -205,5 +212,43 @@ public class StorageManager {
         void onSuccess(String url);
 
         void onFailure(Exception exception);
+    }
+
+    public void downloadFile(String docId){
+
+        Log.d("ROFL", "uploadData/normal/" + getUser().getUid());
+        firebaseFirestore.collection("uploadData/normal/" + getUser().getUid()).document(docId).get().addOnCompleteListener(new OnCompleteListener<DocumentSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DocumentSnapshot> task) {
+                if (task.isSuccessful()) {
+                    DocumentSnapshot document = task.getResult();
+
+                    if (document.exists()) {
+                        FileUtil.chooseFolder(activity, null, new FileUtil.FolderChooseCallback(){
+
+                            @Override
+                            public void onChosen(String path, File file)  {
+                                Map<String, Object> fileData = document.getData();
+                                StorageReference storageReference = firebaseStorage.getReferenceFromUrl(fileData.get("FileUrl").toString());
+
+                                File localFile;
+                                localFile = File.createTempFile(path+"/"+fileData.get("FileName").toString().replaceAll("."+fileData.get("FileExtension").toString(), "") , fileData.get("FileExtension").toString() );
+
+                                storageReference.getFile(localFile).addOnSuccessListener(new OnSuccessListener<FileDownloadTask.TaskSnapshot>() {
+                                    @Override
+                                    public void onSuccess(FileDownloadTask.TaskSnapshot taskSnapshot) {
+                                        Log.d("ASD", taskSnapshot.toString());
+                                    }
+                                });
+                            }
+                        });
+                    } else
+                        Log.d("TAG", "No such document");
+
+                } else
+                    Log.d("TAG", "get failed with ", task.getException());
+
+            }
+        });
     }
 }

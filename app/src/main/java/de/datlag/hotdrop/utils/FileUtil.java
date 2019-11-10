@@ -447,7 +447,7 @@ public class FileUtil {
     }
 
     public interface FolderChooseCallback {
-        void onChosen(String path, File file);
+        void onChosen(String path, File file) throws IOException;
     }
 
     public interface AnyChooseCallback {
