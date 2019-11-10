@@ -75,13 +75,13 @@ public class InteraAuth {
             @Override
             public void onPageFinished(WebView view, String url) {
                 super.onPageFinished(view, url);
-                if (url.contains("iaauth://inteaapps/login")) {
-                    String[] authToken = url.replace("iaauth://inteaapps/login?", "").split("&");
+                if (url.contains(activity.getString(R.string.intera_request_url))) {
+                    String[] authToken = url.replace(activity.getString(R.string.intera_request_url), "").split("&");
                     if (authToken[0] != null && authToken[1] != null) {
                         String mail = null;
-                        String password = authToken[1].substring(authToken[1].indexOf("password="));
+                        String password = authToken[1].substring(authToken[1].indexOf(activity.getString(R.string.intera_split_password)));
                         try {
-                            mail = URLDecoder.decode(authToken[0].split("mail=")[1], StandardCharsets.UTF_8.name());
+                            mail = URLDecoder.decode(authToken[0].split(activity.getString(R.string.intera_split_mail))[1], StandardCharsets.UTF_8.name());
                         } catch (UnsupportedEncodingException e) {
                             e.printStackTrace();
                             return;

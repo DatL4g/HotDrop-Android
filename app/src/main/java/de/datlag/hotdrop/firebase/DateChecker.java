@@ -31,16 +31,14 @@ public class DateChecker {
     }
 
     public void getDate(DateCheckerCallback dateCheckerCallback) {
-        final String mURL = "http://worldclockapi.com/api/json/utc/now";
         RequestQueue queue = Volley.newRequestQueue(activity);
 
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, mURL,
+        StringRequest stringRequest = new StringRequest(Request.Method.GET, activity.getString(R.string.utc_date_url),
                 new Response.Listener<String>() {
                     @Override
                     public void onResponse(String response) {
                         JsonObject jsonObject = new Gson().fromJson(response, JsonObject.class);
-                        String dateString = jsonObject.get("currentDateTime").getAsString();
-                        Log.e("Date", dateString);
+                        String dateString = jsonObject.get("utc_datetime").getAsString();
                         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.ENGLISH);
                         dateFormat.setTimeZone(TimeZone.getTimeZone("UTC"));
                         boolean dateValid = true;

@@ -289,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
             public void onClick(View v) {
                 new MaterialAlertDialogBuilder(activity)
                         .setTitle(getString(R.string.dependencies))
-                        .setMessage("All libs...")
+                        .setItems(activity.getResources().getStringArray(R.array.dependencies), null)
                         .setPositiveButton(getString(R.string.okay), null)
                         .show();
             }
