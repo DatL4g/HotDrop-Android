@@ -108,6 +108,7 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     private EmailAuth emailAuth;
     private OAuth githubAuth;
     private AnonymousAuth anonymousAuth;
+    @Getter
     private StorageManager storageManager;
 
     private DiscoverHost discoverHost;
@@ -235,8 +236,6 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
         firebaseManager.addLogin(anonymousAuth);
         settingsManager = new SettingsManager(activity, firebaseManager);
         storageManager = new StorageManager(activity, firebaseManager);
-
-        storageManager.downloadFile("V9g8NkdN9DQzd7rH3SMv");
 
         infoPageManager = new InfoPageManager();
         infoPageManager.setLayouts(mainLayout, infoLayout, appBarLayout, getSupportActionBar());
@@ -425,6 +424,4 @@ public class MainActivity extends AppCompatActivity implements SearchDeviceFragm
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
-
-
 }
