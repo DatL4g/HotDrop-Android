@@ -3,17 +3,20 @@ package de.datlag.hotdrop.auth;
 import android.app.Activity;
 import android.util.Log;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import androidx.annotation.Nullable;
+
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.StringRequest;
+import com.android.volley.toolbox.Volley;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.GetTokenResult;
 
 import org.jetbrains.annotations.NotNull;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import java.util.Objects;
+
 import de.interaapps.firebasemanager.auth.AnonymousAuth;
 import de.interaapps.firebasemanager.auth.EmailAuth;
 import de.interaapps.firebasemanager.auth.GoogleAuth;
@@ -52,7 +55,7 @@ public class UserManager {
     }
 
     public ProviderEnum getProvider(@NotNull AuthResult authResult) {
-        if (authResult.getUser().getProviderData().size() > 1) {
+        if (Objects.requireNonNull(authResult.getUser()).getProviderData().size() > 1) {
             return checkProvider(authResult.getUser().getProviderData().get(1).getProviderId());
         }
         return ProviderEnum.ANONYM;
@@ -96,7 +99,7 @@ public class UserManager {
         }
 
         if (authResult == null) {
-            providerEnum = getProvider(user);
+            providerEnum = getProvider(Objects.requireNonNull(user));
         } else {
             providerEnum = getProvider(authResult);
         }
@@ -105,7 +108,7 @@ public class UserManager {
             if (interaAccount != null) {
                 userNameCallback.onSuccess(interaAccount.getUsername());
             } else {
-                interaAuth.getUserInfo(user, new InteraAuth.UserInfoCallback() {
+                interaAuth.getUserInfo(Objects.requireNonNull(user), new InteraAuth.UserInfoCallback() {
                     @Override
                     public void onUserInfoSuccess(String response) {
                         interaAccount = new InteraAccount(response);
@@ -120,24 +123,26 @@ public class UserManager {
             }
         } else if (providerEnum == ProviderEnum.GITHUB) {
             if (authResult != null) {
-                userNameCallback.onSuccess(authResult.getAdditionalUserInfo().getUsername());
+                userNameCallback.onSuccess(Objects.requireNonNull(authResult.getAdditionalUserInfo()).getUsername());
             } else {
-                firebaseAuth.getAccessToken(true).addOnSuccessListener(activity, new OnSuccessListener<GetTokenResult>() {
-                    @Override
-                    public void onSuccess(GetTokenResult getTokenResult) {
-                        Log.e("Github Success", getTokenResult.getToken());
-                        userNameCallback.onSuccess("Github Account");
-                    }
-                }).addOnFailureListener(activity, new OnFailureListener() {
-                    @Override
-                    public void onFailure(@NonNull Exception e) {
-                        Log.e("Github Error", e.getMessage());
-                        userNameCallback.onFailed(e);
-                    }
-                });
+                Objects.requireNonNull(firebaseAuth).getAccessToken(true).addOnSuccessListener(activity, getTokenResult -> {
+
+                    RequestQueue queue = Volley.newRequestQueue(activity);
+
+                    StringRequest stringRequest = new StringRequest(Request.Method.GET, "https://github.com/login/oauth/authorize?client_id="+ getTokenResult +"&scope=user", response -> {
+                        Log.e("GITHUB", "Scope Success");
+                        Log.e("GITHUB", response);
+                    }, error -> {
+                        Log.e("GITHUB", "Scope failed");
+                        Log.e("GITHUB", error.getMessage());
+                    });
+                    queue.add(stringRequest);
+
+                    userNameCallback.onSuccess("Github Account");
+                }).addOnFailureListener(activity, userNameCallback::onFailed);
             }
         } else if (providerEnum == ProviderEnum.GOOGLE) {
-            userNameCallback.onSuccess(user.getDisplayName());
+            userNameCallback.onSuccess(Objects.requireNonNull(user).getDisplayName());
         } else {
             userNameCallback.onSuccess("Anonymous");
         }
@@ -157,22 +162,19 @@ public class UserManager {
                         }
                     });
                 } else if (auth instanceof EmailAuth) {
-                    Log.e("Intera", "Login");
                     interaAuth.startLogin((EmailAuth) auth, new InteraAuth.LoginCallback() {
                         @Override
                         public void onLoginSuccess(@NotNull AuthResult authResult) {
-                            interaAuth.getUserInfo(authResult.getUser(), new InteraAuth.UserInfoCallback() {
+                            interaAuth.getUserInfo(Objects.requireNonNull(authResult.getUser()), new InteraAuth.UserInfoCallback() {
                                 @Override
                                 public void onUserInfoSuccess(String response) {
                                     interaAccount = new InteraAccount(response);
                                     loginCallback.onLoginSuccess(authResult);
-                                    Log.e("Intera", interaAccount.getUsername());
                                 }
 
                                 @Override
                                 public void onUserInfoFailed(Exception exception) {
                                     loginCallback.onLoginSuccess(authResult);
-                                    Log.e("Intera", exception.getMessage());
                                 }
                             });
                         }

@@ -1,12 +1,15 @@
-package de.datlag.hotdrop;
+package de.datlag.hotdrop.fragment;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.adroitandroid.near.model.Host;
 
@@ -14,10 +17,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import de.datlag.hotdrop.utils.ChooseHostRecyclerAdapter;
+import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.view.adapter.ChooseHostRecyclerAdapter;
 
 public class ChooseDeviceFragment extends Fragment implements ChooseHostRecyclerAdapter.ItemClickListener {
     private Set<Host> mHosts;
@@ -43,12 +44,6 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
         initialize();
         initializeLogic();
         return rootView;
-    }
-
-    public void onButtonPressed(Uri uri) {
-        if (mListener != null) {
-            mListener.onChooseFragmentInteraction((Host) mHosts.toArray()[0]);
-        }
     }
 
     @Override

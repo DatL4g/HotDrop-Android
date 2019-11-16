@@ -1,4 +1,4 @@
-package de.datlag.hotdrop.utils;
+package de.datlag.hotdrop.view.animation;
 
 import android.view.View;
 import android.view.animation.Animation;

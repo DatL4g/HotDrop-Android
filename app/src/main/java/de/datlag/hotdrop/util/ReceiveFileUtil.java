@@ -1,11 +1,14 @@
-package de.datlag.hotdrop.utils;
+package de.datlag.hotdrop.util;
 
 import android.app.Activity;
-import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.text.Spanned;
+import android.util.SparseArray;
+
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.widget.AppCompatImageView;
 
 import com.adroitandroid.near.model.Host;
 import com.google.android.exoplayer2.ExoPlayerFactory;
@@ -19,17 +22,13 @@ import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.gson.JsonObject;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Objects;
 
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.widget.AppCompatImageView;
 import de.datlag.hotdrop.R;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
@@ -40,7 +39,7 @@ public class ReceiveFileUtil {
 
     private Activity activity;
     private Markwon markwon;
-    private HashMap<Integer, byte[]> byteArrayList = new HashMap<>();
+    private SparseArray<byte[]> byteArrayList = new SparseArray<>();
 
     public ReceiveFileUtil(Activity activity) {
         this.activity = activity;
@@ -154,13 +153,7 @@ public class ReceiveFileUtil {
     @NotNull
     private MediaSource createMediaSourceFromByteArray(byte[] data) {
         ByteArrayDataSource byteArrayDataSource = new ByteArrayDataSource(data);
-        DataSource.Factory factory = new DataSource.Factory() {
-            @Contract(pure = true)
-            @Override
-            public DataSource createDataSource() {
-                return byteArrayDataSource;
-            }
-        };
+        DataSource.Factory factory = () -> byteArrayDataSource;
         MediaSource mediaSource = new ExtractorMediaSource.Factory(factory)
                 .setExtractorsFactory(new DefaultExtractorsFactory())
                 .createMediaSource(Uri.EMPTY);

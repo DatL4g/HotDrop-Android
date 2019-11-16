@@ -1,7 +1,9 @@
-package de.datlag.hotdrop.utils;
+package de.datlag.hotdrop.p2p;
 
 import android.app.Activity;
 import android.os.Looper;
+
+import androidx.collection.ArraySet;
 
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.model.Host;
@@ -12,7 +14,8 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.ArrayList;
 
-import androidx.collection.ArraySet;
+import de.datlag.hotdrop.util.FileUtil;
+import de.datlag.hotdrop.util.ReceiveFileUtil;
 
 
 public class HostTransfer {

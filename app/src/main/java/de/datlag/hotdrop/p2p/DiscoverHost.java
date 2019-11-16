@@ -1,9 +1,10 @@
-package de.datlag.hotdrop.utils;
+package de.datlag.hotdrop.p2p;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Looper;
+
+import androidx.annotation.NonNull;
 
 import com.adroitandroid.near.connect.NearConnect;
 import com.adroitandroid.near.discovery.NearDiscovery;
@@ -15,11 +16,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
 
-import androidx.annotation.NonNull;
-import de.datlag.hotdrop.ChooseDeviceFragment;
 import de.datlag.hotdrop.MainActivity;
 import de.datlag.hotdrop.R;
-import de.datlag.hotdrop.TransferFragment;
+import de.datlag.hotdrop.extend.AdvancedActivity;
+import de.datlag.hotdrop.fragment.ChooseDeviceFragment;
+import de.datlag.hotdrop.fragment.TransferFragment;
 import github.nisrulz.easydeviceinfo.base.EasyDeviceMod;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
@@ -28,7 +29,7 @@ import io.noties.markwon.html.HtmlPlugin;
 
 public class DiscoverHost {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private NearDiscovery nearDiscovery;
     private NearConnect nearConnect;
     private ChooseDeviceFragment chooseDeviceFragment = null;
@@ -40,7 +41,7 @@ public class DiscoverHost {
     public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
     public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
 
-    public DiscoverHost(Activity activity) {
+    public DiscoverHost(AdvancedActivity activity) {
         this.activity = activity;
         discoverHost = this;
         init();
@@ -88,7 +89,9 @@ public class DiscoverHost {
         if (nearConnect.isReceiving()) {
             nearConnect.stopReceiving(false);
             if (activity instanceof MainActivity) {
-                ((MainActivity) activity).setSearching(false);
+                if(((MainActivity) activity).getSearchDeviceFragment() != null) {
+                    ((MainActivity) activity).getSearchDeviceFragment().setSearch(false);
+                }
             }
         }
     }
@@ -115,20 +118,22 @@ public class DiscoverHost {
                     } else {
                         chooseDeviceFragment.setHosts(hosts);
                     }
-                    if (activity instanceof MainActivity) {
-                        ((MainActivity) activity).switch2Fragment(chooseDeviceFragment);
-                    }
+                    activity.switchFragment(chooseDeviceFragment, R.id.fragment_view);
                 } else {
                     if (activity instanceof MainActivity) {
-                        ((MainActivity) activity).switch2Fragment(((MainActivity) activity).searchDeviceFragment);
+                        activity.switchFragment(((MainActivity) activity).getSearchDeviceFragment(), R.id.fragment_view);
                     }
                     if (nearDiscovery.isDiscovering()) {
                         if (activity instanceof MainActivity) {
-                            ((MainActivity) activity).setSearching(true);
+                            if(((MainActivity) activity).getSearchDeviceFragment() != null) {
+                                ((MainActivity) activity).getSearchDeviceFragment().setSearch(true);
+                            }
                         }
                     } else {
                         if (activity instanceof MainActivity) {
-                            ((MainActivity) activity).setSearching(false);
+                            if(((MainActivity) activity).getSearchDeviceFragment() != null) {
+                                ((MainActivity) activity).getSearchDeviceFragment().setSearch(false);
+                            }
                         }
                     }
                 }
@@ -138,7 +143,9 @@ public class DiscoverHost {
             public void onDiscoveryTimeout() {
                 stopDiscovery();
                 if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).setSearching(false);
+                    if(((MainActivity) activity).getSearchDeviceFragment() != null) {
+                        ((MainActivity) activity).getSearchDeviceFragment().setSearch(false);
+                    }
                 }
             }
 
@@ -146,7 +153,9 @@ public class DiscoverHost {
             public void onDiscoveryFailure(Throwable e) {
                 stopDiscovery();
                 if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).setSearching(false);
+                    if(((MainActivity) activity).getSearchDeviceFragment() != null) {
+                        ((MainActivity) activity).getSearchDeviceFragment().setSearch(false);
+                    }
                 }
             }
 
@@ -154,7 +163,9 @@ public class DiscoverHost {
             public void onDiscoverableTimeout() {
                 stopDiscovery();
                 if (activity instanceof MainActivity) {
-                    ((MainActivity) activity).setSearching(false);
+                    if(((MainActivity) activity).getSearchDeviceFragment() != null) {
+                        ((MainActivity) activity).getSearchDeviceFragment().setSearch(false);
+                    }
                 }
             }
         };
@@ -175,7 +186,7 @@ public class DiscoverHost {
                             break;
 
                         default:
-                            stopDiscoveryAndStartTransfer(sender);
+                            nearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
                             break;
                     }
                 }
@@ -222,6 +233,10 @@ public class DiscoverHost {
             case MESSAGE_RESPONSE_ACCEPT_REQUEST:
                 stopDiscoveryAndStartTransfer(sender);
                 break;
+
+            default:
+                nearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
+                break;
         }
     }
 
@@ -229,7 +244,6 @@ public class DiscoverHost {
         nearConnect.stopReceiving(false);
         nearDiscovery.stopDiscovery();
         transferFragment = new TransferFragment(activity, host);
-        if (activity instanceof MainActivity)
-            ((MainActivity) activity).switch2Fragment(transferFragment);
+        activity.switchFragment(transferFragment, R.id.fragment_view);
     }
 }

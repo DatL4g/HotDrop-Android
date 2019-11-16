@@ -1,4 +1,4 @@
-package de.datlag.hotdrop.utils;
+package de.datlag.hotdrop.util;
 
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;

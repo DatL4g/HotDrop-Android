@@ -10,9 +10,6 @@
     <uses-feature
         android:name="android.hardware.location.gps"
         android:required="false" />
-    <uses-feature
-        android:name="android.hardware.bluetooth"
-        android:required="false" />
 
     <uses-permission
         android:required="true"
@@ -38,12 +35,6 @@
     <uses-permission
         android:required="true"
         android:name="android.permission.INTERNET"/>
-    <uses-permission
-        android:required="true"
-        android:name="android.permission.BLUETOOTH"/>
-    <uses-permission
-        android:required="true"
-        android:name="android.permission.BLUETOOTH_ADMIN"/>
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
@@ -67,9 +58,9 @@
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
             </intent-filter>
         </activity>
-        <service
-            android:exported="false"
-            android:name="com.novoda.merlin.MerlinService" />
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="@string/admob_app_id" />
     </application>
 
 </manifest>

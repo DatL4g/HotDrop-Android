@@ -17,7 +17,8 @@
             android:id="@+id/app_bar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:elevation="8dp">
+            android:background="@color/primaryColor"
+            app:elevation="0dp">
 
             <androidx.appcompat.widget.Toolbar
                 android:id="@+id/toolbar"
@@ -103,6 +104,14 @@
 
                 </androidx.appcompat.widget.LinearLayoutCompat>
 
+                <com.google.android.gms.ads.AdView
+                    android:id="@+id/adView"
+                    android:layout_width="match_parent"
+                    android:layout_height="?attr/actionBarSize"
+                    android:layout_gravity="bottom|center_horizontal"
+                    app:adSize="BANNER"
+                    app:adUnitId="@string/admob_banner_id" />
+
                     <com.leinardi.android.speeddial.SpeedDialView
                         android:id="@+id/speedDial"
                         android:layout_width="wrap_content"
@@ -118,12 +127,10 @@
                         app:sdMainFabOpenedIconColor="@android:color/white" />
             </FrameLayout>
 
-            <include
-                layout="@layout/layout_info"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent" />
-
-
+                <include
+                    layout="@layout/layout_info"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
         </io.codetail.widget.RevealFrameLayout>
     </androidx.appcompat.widget.LinearLayoutCompat>
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

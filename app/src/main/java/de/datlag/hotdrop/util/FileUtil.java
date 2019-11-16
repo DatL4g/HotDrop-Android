@@ -1,4 +1,4 @@
-package de.datlag.hotdrop.utils;
+package de.datlag.hotdrop.util;
 
 import android.app.Activity;
 import android.content.ContentResolver;
@@ -44,18 +44,8 @@ public class FileUtil {
 
     public static void chooseFile(Activity activity, FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String path, File pathFile) {
-                        fileChooseCallback.onChosen(path, pathFile);
-                    }
-                })
-                // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
-                        dialog.cancel();
-                    }
-                })
+                .withChosenListener(fileChooseCallback::onChosen)
+                .withOnCancelListener(DialogInterface::cancel)
                 .build()
                 .show();
     }
@@ -63,18 +53,8 @@ public class FileUtil {
     public static void chooseFile(Activity activity, FileFilter fileFilter, FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withFilter(fileFilter)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String path, File pathFile) {
-                        fileChooseCallback.onChosen(path, pathFile);
-                    }
-                })
-                // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
-                        dialog.cancel();
-                    }
-                })
+                .withChosenListener(fileChooseCallback::onChosen)
+                .withOnCancelListener(DialogInterface::cancel)
                 .build()
                 .show();
     }
@@ -82,36 +62,23 @@ public class FileUtil {
     public static void chooseFolder(Activity activity, FolderChooseCallback folderChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withFilter(true, false)
-                .withChosenListener(new ChooserDialog.Result() {
-                    @Override
-                    public void onChoosePath(String path, File pathFile) {
-                        try {
-                            folderChooseCallback.onChosen(path, pathFile);
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
+                .withChosenListener((path, pathFile) -> {
+                    try {
+                        folderChooseCallback.onChosen(path, pathFile);
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 })
-                // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener(new DialogInterface.OnCancelListener() {
-                    public void onCancel(DialogInterface dialog) {
-                        dialog.cancel();
-                    }
-                })
+                .withOnCancelListener(DialogInterface::cancel)
                 .build()
                 .show();
     }
 
-    public static void chooseFile(Activity activity, String startingPath, FileChooseCallback fileChooseCallback) {
+    public static void chooseFile(Activity activity, String startingPath, @NotNull FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
                 .withStartFile(startingPath)
-                .withChosenListener((path, pathFile) -> {
-                        fileChooseCallback.onChosen(path, pathFile);
-                })
-                // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener((dialog) -> {
-                        dialog.cancel();
-                })
+                .withChosenListener(fileChooseCallback::onChosen)
+                .withOnCancelListener(DialogInterface::cancel)
                 .build()
                 .show();
     }
@@ -127,10 +94,7 @@ public class FileUtil {
                             e.printStackTrace();
                         }
                 })
-                // to handle the back key pressed or clicked outside the dialog:
-                .withOnCancelListener((dialog) -> {
-                        dialog.cancel();
-                })
+                .withOnCancelListener(DialogInterface::cancel)
                 .build()
                 .show();
     }
@@ -145,9 +109,7 @@ public class FileUtil {
                             anyChooseCallback.onChosenFolder(dir, dirFile);
                         }
                 })
-                .withOnCancelListener((dialogInterface) -> {
-                        dialogInterface.cancel();
-                })
+                .withOnCancelListener(DialogInterface::cancel)
                 .withNegativeButton("Choose Folder", (dialogInterface, i) -> {
                         new ChooserDialog.Result() {
                             @Override

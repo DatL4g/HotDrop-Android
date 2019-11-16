@@ -1,5 +1,12 @@
 <resources>
 
+    <!-- CONFIGURATION -->
+    <string name="app_name" translatable="false">HotDrop</string>
+    <string name="app_package" translatable="false">de.datlag.hotdrop</string>
+    <string name="font_regular_path" translatable="false">fonts/Poppins-Regular.ttf</string>
+    <string name="admob_app_id" translatable="false">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_banner_id" translatable="false">ca-app-pub-3940256099942544/6300978111</string>
+
     <!-- BUTTONS -->
     <string name="ok">OK</string>
     <string name="okay">Okay</string>
@@ -9,7 +16,6 @@
 
 
     <!-- INFORMATION PAGE -->
-    <string name="app_name" translatable="false">HotDrop</string>
     <string name="open_hotdrop">Open HotDrop on any other devices to send files.</string>
     <string name="info_text">Easily send files and folders from one device to another.</string>
     <string name="github_repo" translatable="false">https://github.com/DATL4G/HotDrop-Android</string>
@@ -53,7 +59,7 @@
     <string-array name="available_settings">
         <item>Account</item>
         <item>Connectivity</item>
-        <item>Permissions</item>
+        <item>Upgrade</item>
     </string-array>
 
     <!-- Sign in Options -->

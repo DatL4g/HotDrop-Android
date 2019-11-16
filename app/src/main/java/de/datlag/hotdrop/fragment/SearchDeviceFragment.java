@@ -1,6 +1,6 @@
-package de.datlag.hotdrop;
+package de.datlag.hotdrop.fragment;
 
-import android.content.Context;
+import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,29 +8,28 @@ import android.view.ViewGroup;
 import android.view.animation.AccelerateDecelerateInterpolator;
 import android.view.animation.Animation;
 
+import androidx.fragment.app.Fragment;
+
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import org.jetbrains.annotations.NotNull;
 
-import androidx.fragment.app.Fragment;
-import de.datlag.hotdrop.utils.CircularAnimation;
+import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.p2p.DiscoverHost;
+import de.datlag.hotdrop.view.animation.CircularAnimation;
 
 public class SearchDeviceFragment extends Fragment {
 
+    private Activity activity;
     private View rootView;
     private FloatingActionButton searchFAB;
     private boolean search = false;
     private CircularAnimation rotateAnimation;
+    private DiscoverHost discoverHost;
 
-    private OnFragmentInteractionListener mListener;
-
-    public SearchDeviceFragment() {}
-
-    public static SearchDeviceFragment newInstance() {
-        SearchDeviceFragment fragment = new SearchDeviceFragment();
-        Bundle args = new Bundle();
-        fragment.setArguments(args);
-        return fragment;
+    public SearchDeviceFragment(Activity activity, DiscoverHost discoverHost) {
+        this.activity = activity;
+        this.discoverHost = discoverHost;
     }
 
     @Override
@@ -51,28 +50,13 @@ public class SearchDeviceFragment extends Fragment {
             rotateAnimation.setRepeatMode(Animation.RESTART);
             rotateAnimation.setRepeatCount(Animation.INFINITE);
             searchFAB.startAnimation(rotateAnimation);
+            discoverHost.startDiscovery();
         } else {
             rotateAnimation.cancel();
             rotateAnimation.reset();
             searchFAB.clearAnimation();
+            discoverHost.stopDiscovery();
         }
-    }
-
-    @Override
-    public void onAttach(@NotNull Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
     }
 
     private void initialize() {
@@ -81,14 +65,7 @@ public class SearchDeviceFragment extends Fragment {
 
     private void initializeLogic() {
         searchFAB.setOnClickListener((View view) -> {
-                if (mListener != null) {
-                    setSearch(!search);
-                    mListener.onSearchFragmentInteraction(search);
-                }
+            setSearch(!search);
         });
-    }
-
-    public interface OnFragmentInteractionListener {
-        void onSearchFragmentInteraction(boolean search);
     }
 }

@@ -1,6 +1,5 @@
-package de.datlag.hotdrop;
+package de.datlag.hotdrop.fragment;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.DragEvent;
@@ -8,6 +7,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+
+import androidx.appcompat.widget.AppCompatTextView;
+import androidx.appcompat.widget.LinearLayoutCompat;
+import androidx.fragment.app.Fragment;
 
 import com.adroitandroid.near.model.Host;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -17,16 +20,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 
-import androidx.appcompat.widget.AppCompatTextView;
-import androidx.appcompat.widget.LinearLayoutCompat;
-import androidx.fragment.app.Fragment;
-import de.datlag.hotdrop.utils.FileUtil;
-import de.datlag.hotdrop.utils.HostTransfer;
+import de.datlag.hotdrop.MainActivity;
+import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
+import de.datlag.hotdrop.p2p.HostTransfer;
+import de.datlag.hotdrop.util.FileUtil;
 
 
 public class TransferFragment extends Fragment {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private HostTransfer hostTransfer;
     private Host host;
     private View rootView;
@@ -37,7 +40,7 @@ public class TransferFragment extends Fragment {
     private FloatingActionButton uploadFile;
     private String hostCheckedName;
 
-    public TransferFragment(Activity activity, @NotNull Host host) {
+    public TransferFragment(AdvancedActivity activity, @NotNull Host host) {
         this.activity = activity;
         this.host = host;
     }
@@ -74,7 +77,7 @@ public class TransferFragment extends Fragment {
                         .setMessage("Are your sure you want to disconnect?")
                         .setPositiveButton(activity.getString(R.string.ok), (DialogInterface dialogInterface, int i) -> {
                                 if (activity instanceof MainActivity) {
-                                    ((MainActivity) activity).switch2Fragment(((MainActivity) activity).searchDeviceFragment);
+                                    activity.switchFragment(((MainActivity) activity).getSearchDeviceFragment(), R.id.fragment_view);
                                 }
                         })
                         .setNegativeButton(activity.getString(R.string.cancel), null)
@@ -95,24 +98,19 @@ public class TransferFragment extends Fragment {
                 });
         });
 
-        fileContainer.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                new MaterialAlertDialogBuilder(activity)
-                        .setMessage("Sending File or Folder?")
-                        .setPositiveButton("File", (DialogInterface dialogInterface, int i) -> {
-                                FileUtil.chooseFile(activity, defaultPath, (String path, File file) -> {
-                                        hostTransfer.startTransfer(file);
-                                        defaultPath = path;
-                                });
-                        }).setNegativeButton("Folder", (DialogInterface dialogInterface, int i) -> {
-                                FileUtil.chooseFolder(activity, defaultPath, (String path, File file) -> {
-                                    hostTransfer.startTransfer(FileUtil.folderToFile(activity, file));
-                                    defaultPath = path;
-                                });
-                        }).create().show();
-            }
-        });
+        fileContainer.setOnClickListener(view -> new MaterialAlertDialogBuilder(activity)
+                .setMessage("Sending File or Folder?")
+                .setPositiveButton("File", (DialogInterface dialogInterface, int i) -> {
+                        FileUtil.chooseFile(activity, defaultPath, (String path, File file) -> {
+                                hostTransfer.startTransfer(file);
+                                defaultPath = path;
+                        });
+                }).setNegativeButton("Folder", (DialogInterface dialogInterface, int i) -> {
+                        FileUtil.chooseFolder(activity, defaultPath, (String path, File file) -> {
+                            hostTransfer.startTransfer(FileUtil.folderToFile(activity, file));
+                            defaultPath = path;
+                        });
+                }).create().show());
 
 
         fileContainer.setOnDragListener((View view, DragEvent dragEvent) -> {

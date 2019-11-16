@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="snackbar_margin">5dp</dimen>
+    <dimen name="snackbar_margin">12dp</dimen>
+    <dimen name="snackbar_rounded">4dp</dimen>
+    <dimen name="snackbar_shadow">6dp</dimen>
 </resources>

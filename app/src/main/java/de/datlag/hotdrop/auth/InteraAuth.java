@@ -10,10 +10,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+import androidx.appcompat.app.AlertDialog;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -27,7 +27,6 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-import androidx.appcompat.app.AlertDialog;
 import de.datlag.hotdrop.R;
 import de.interaapps.firebasemanager.auth.EmailAuth;
 
@@ -39,22 +38,12 @@ public class InteraAuth {
         this.activity = activity;
     }
 
-    public void getUserInfo(@NotNull FirebaseUser user, UserInfoCallback userInfoCallback) {
+    public void getUserInfo(@NotNull FirebaseUser user, @NotNull UserInfoCallback userInfoCallback) {
         final String mURL = activity.getString(R.string.intera_user_url) + user.getEmail();
         RequestQueue queue = Volley.newRequestQueue(activity);
 
         StringRequest stringRequest = new StringRequest(Request.Method.GET, mURL,
-                new Response.Listener<String>() {
-                    @Override
-                    public void onResponse(String response) {
-                        userInfoCallback.onUserInfoSuccess(response);
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                userInfoCallback.onUserInfoFailed(error);
-            }
-        });
+                userInfoCallback::onUserInfoSuccess, userInfoCallback::onUserInfoFailed);
         queue.add(stringRequest);
     }
 
