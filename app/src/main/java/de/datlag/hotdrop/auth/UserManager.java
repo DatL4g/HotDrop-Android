@@ -17,6 +17,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.interaapps.firebasemanager.auth.AnonymousAuth;
 import de.interaapps.firebasemanager.auth.EmailAuth;
 import de.interaapps.firebasemanager.auth.GoogleAuth;
@@ -26,12 +27,12 @@ import de.interaapps.firebasemanager.core.auth.Auth;
 
 public class UserManager {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private FirebaseManager firebaseManager;
     private InteraAccount interaAccount;
     private InteraAuth interaAuth;
 
-    public UserManager(Activity activity, FirebaseManager firebaseManager) {
+    public UserManager(AdvancedActivity activity, FirebaseManager firebaseManager) {
         this.activity = activity;
         this.firebaseManager = firebaseManager;
 

@@ -30,6 +30,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.ext.tables.TablePlugin;
@@ -37,11 +38,11 @@ import io.noties.markwon.html.HtmlPlugin;
 
 public class ReceiveFileUtil {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private Markwon markwon;
     private SparseArray<byte[]> byteArrayList = new SparseArray<>();
 
-    public ReceiveFileUtil(Activity activity) {
+    public ReceiveFileUtil(AdvancedActivity activity) {
         this.activity = activity;
         markwon = Markwon.builder(activity)
                 .usePlugin(HtmlPlugin.create())
@@ -104,7 +105,7 @@ public class ReceiveFileUtil {
                 "**MimeType:** "+ mimeType+ "<br>" +
                 realMimeType + mimeAndExtSecure);
 
-        AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity)
+        AlertDialog alertDialog = activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle(name)
                 .setMessage(markdown)
                 .setPositiveButton(activity.getString(R.string.choose_destination), (dialogInterface, i) -> FileUtil.chooseFolder(activity, (path1, file) -> {
@@ -112,7 +113,7 @@ public class ReceiveFileUtil {
                     FileUtil.writeBytesToFile(bytes, path1 +File.separator+name);
                 }))
                 .setNegativeButton(activity.getString(R.string.decline), null)
-                .create();
+                .create());
 
         if (MimeTypes.isImage(mimeType) && MimeTypes.isImage(detectedMimeType)) {
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Preview", (dialogInterface, i) -> {
@@ -120,11 +121,11 @@ public class ReceiveFileUtil {
                 Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
                 appCompatImageView.setImageBitmap(bitmap);
                 alertDialog.cancel();
-                new MaterialAlertDialogBuilder(activity)
+                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setTitle("Preview")
                         .setPositiveButton(activity.getString(R.string.close), (dialogInterface1, i1) -> alertDialog.show())
                         .setView(appCompatImageView)
-                        .create().show();
+                        .create()).show();
             });
         } else if (MimeTypes.isVideo(mimeType) || MimeTypes.isAudio(mimeType)) {
             alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Preview", (dialogInterface, i) -> {
@@ -135,7 +136,7 @@ public class ReceiveFileUtil {
                 player.setPlayWhenReady(true);
 
                 alertDialog.cancel();
-                new MaterialAlertDialogBuilder(activity)
+                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setTitle("Preview")
                         .setPositiveButton(activity.getString(R.string.close), (dialogInterface12, i12) -> {
                             alertDialog.show();
@@ -143,7 +144,7 @@ public class ReceiveFileUtil {
                             player.stop(true);
                         })
                         .setView(playerView)
-                        .create().show();
+                        .create()).show();
             });
         }
 

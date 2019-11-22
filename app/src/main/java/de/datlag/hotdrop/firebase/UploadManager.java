@@ -139,33 +139,4 @@ public class UploadManager {
         void onSuccess(String url);
         void onFailure(Exception exception);
     }
-
-    public void downloadFile(String docId){
-
-        firebaseFirestore.collection("uploadData/normal/" + firebaseUser.getUid()).document(docId).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot document = task.getResult();
-
-                if (Objects.requireNonNull(document).exists()) {
-                    FileUtil.chooseFolder(activity, null, (String path, File file) -> {
-                        Map<String, Object> fileData = document.getData();
-                        StorageReference storageReference = firebaseStorage.getReferenceFromUrl(Objects.requireNonNull(Objects.requireNonNull(fileData).get("FileUrl")).toString());
-
-                        File localFile = null;
-                        try {
-                            localFile = File.createTempFile(path+"/"+fileData.get("FileName").toString().replaceAll("."+fileData.get("FileExtension").toString(), "") , fileData.get("FileExtension").toString() );
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-
-                        storageReference.getFile(Objects.requireNonNull(localFile)).addOnSuccessListener(taskSnapshot -> {
-                        });
-                    });
-                } else
-                    Log.d("TAG", "No such document");
-
-            } else
-                Log.d("TAG", "get failed with ", task.getException());
-        });
-    }
 }

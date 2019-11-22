@@ -9,14 +9,15 @@ import com.google.android.material.snackbar.Snackbar;
 import org.jetbrains.annotations.NotNull;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.view.helper.MaterialSnackbar;
 
 public class AuthSettings {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private String[] signInArray;
 
-    public AuthSettings(Activity activity) {
+    public AuthSettings(AdvancedActivity activity) {
         this.activity = activity;
 
         init();
@@ -27,20 +28,20 @@ public class AuthSettings {
     }
 
     public void providerDialog(ProviderCallback providerCallback) {
-        new MaterialAlertDialogBuilder(activity)
+        activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle("Provider")
                 .setItems(signInArray, (DialogInterface dialogInterface, int i) -> {
                     providerCallback.onChosen(i);
                 })
                 .setPositiveButton(activity.getString(R.string.cancel), null)
-                .create().show();
+                .create()).show();
     }
 
     public void infoDialog(@NotNull UserManager userManager) {
         userManager.getUserName(new UserManager.UserNameCallback() {
             @Override
             public void onSuccess(String username) {
-                new MaterialAlertDialogBuilder(activity)
+                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setTitle("Account")
                         .setMessage("Logged in as "+username)
                         .setPositiveButton(activity.getString(R.string.okay), null)
@@ -59,7 +60,7 @@ public class AuthSettings {
                                     }
                                 });
                         })
-                        .create().show();
+                        .create()).show();
             }
 
             @Override

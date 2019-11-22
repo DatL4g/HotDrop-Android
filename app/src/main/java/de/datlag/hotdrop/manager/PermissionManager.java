@@ -14,12 +14,13 @@ import com.karumi.dexter.listener.multi.MultiplePermissionsListener;
 import java.util.List;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 
 public class PermissionManager {
 
-    private Activity activity;
+    private AdvancedActivity activity;
 
-    public PermissionManager(Activity activity) {
+    public PermissionManager(AdvancedActivity activity) {
         this.activity = activity;
     }
 
@@ -46,11 +47,11 @@ public class PermissionManager {
                                 }
 
 
-                                new MaterialAlertDialogBuilder(activity)
+                                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                                         .setTitle(activity.getString(R.string.not_granted))
                                         .setMessage(message.toString())
                                         .setPositiveButton(activity.getString(R.string.close), (dialogInterface, i) -> activity.finishAffinity())
-                                        .create().show();
+                                        .create()).show();
                             }
                         }
                     }
@@ -63,13 +64,13 @@ public class PermissionManager {
                             message.append(permissionInfo[i].concat((i + 1 == permissionInfo.length) ? "" : "\n\n"));
                         }
 
-                        new MaterialAlertDialogBuilder(activity)
+                        activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                                 .setTitle(activity.getString(R.string.location_storage))
                                 .setMessage(message.toString())
                                 .setPositiveButton(activity.getString(R.string.okay), (DialogInterface dialogInterface, int i) -> {
                                     token.continuePermissionRequest();
                                 })
-                                .create().show();
+                                .create()).show();
                     }
                 })
                 .check();

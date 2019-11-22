@@ -5,6 +5,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.util.Log;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
@@ -14,6 +15,7 @@ import com.google.firebase.auth.FirebaseUser;
 import java.util.Objects;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.manager.SettingsManager;
 import de.datlag.hotdrop.view.helper.MaterialSnackbar;
 import de.interaapps.firebasemanager.core.FirebaseManager;
@@ -22,13 +24,13 @@ import de.interaapps.firebasemanager.core.auth.Auth;
 import static android.content.Context.CLIPBOARD_SERVICE;
 
 public class StorageManager {
-    private Activity activity;
+    private AdvancedActivity activity;
     private FirebaseManager firebaseManager;
     private SettingsManager settingsManager;
     private FirebaseUser firebaseUser;
     private UploadManager uploadManager;
 
-    public StorageManager(Activity activity, FirebaseManager firebaseManager, SettingsManager settingsManager) {
+    public StorageManager(AdvancedActivity activity, FirebaseManager firebaseManager, SettingsManager settingsManager) {
         this.activity = activity;
         this.firebaseManager = firebaseManager;
         this.settingsManager = settingsManager;
@@ -43,14 +45,14 @@ public class StorageManager {
 
     private boolean checkLoginValid() {
         if (firebaseUser == null) {
-            new MaterialAlertDialogBuilder(activity)
+            activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                     .setTitle(activity.getString(R.string.account))
                     .setMessage(activity.getString(R.string.upload_info))
                     .setPositiveButton(activity.getString(R.string.okay), (DialogInterface dialogInterface, int i) -> {
                         settingsManager.chooseSetting(0);
                     }).setNegativeButton(activity.getString(R.string.cancel), (DialogInterface dialogInterface, int i) -> {
                 // ToDo: INSERT
-            }).create().show();
+            }).create()).show();
             return false;
         }
 
@@ -63,7 +65,7 @@ public class StorageManager {
                 @Override
                 public void onSuccess(String downloadUri) {
                     if (firebaseUser.isAnonymous()) {
-                        new MaterialAlertDialogBuilder(activity)
+                        activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                                 .setTitle("File uploaded")
                                 .setMessage("Please share this link, otherwise you cannot Download this file or have any access to it")
                                 .setPositiveButton("Share", (dialogInterface, i) -> {
@@ -77,7 +79,7 @@ public class StorageManager {
                             ClipData clip = ClipData.newPlainText("DownloadUrl", downloadUri);
                             Objects.requireNonNull(clipboard).setPrimaryClip(clip);
                         })
-                                .create().show();
+                                .create()).show();
                     } else {
                         Snackbar snackbar = Snackbar.make(activity.findViewById(R.id.coordinator), "File uploaded!", Snackbar.LENGTH_LONG);
                         MaterialSnackbar.configSnackbar(activity, snackbar);
@@ -90,6 +92,7 @@ public class StorageManager {
                     Snackbar snackbar = Snackbar.make(activity.findViewById(R.id.coordinator), "Upload failed!", Snackbar.LENGTH_LONG);
                     MaterialSnackbar.configSnackbar(activity, snackbar);
                     snackbar.show();
+                    Log.e("Upload", exception.getMessage());
                 }
             });
         }

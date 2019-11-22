@@ -14,23 +14,24 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.util.ArrayList;
 
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.util.FileUtil;
 import de.datlag.hotdrop.util.ReceiveFileUtil;
 
 
 public class HostTransfer {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private Host host;
     private NearConnect nearConnect;
     private HostTransfer hostTransfer;
     private ReceiveFileUtil receiveFileUtil;
 
-    public HostTransfer(Activity activity) {
+    public HostTransfer(AdvancedActivity activity) {
         this.activity = activity;
     }
 
-    public HostTransfer(Activity activity, Host host) {
+    public HostTransfer(AdvancedActivity activity, Host host) {
         this.activity = activity;
         this.host = host;
 

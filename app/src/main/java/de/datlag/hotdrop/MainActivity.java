@@ -2,7 +2,9 @@ package de.datlag.hotdrop;
 
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -22,8 +24,12 @@ import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
 import com.google.android.gms.ads.MobileAds;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.leinardi.android.speeddial.SpeedDialActionItem;
 import com.leinardi.android.speeddial.SpeedDialView;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 
@@ -111,6 +117,8 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
         initViewLogic();
         initLogic();
         initListener();
+        initDeeplink();
+        initReceive();
     }
 
     private void initImportant() {
@@ -245,6 +253,45 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
                 settingsManager.open();
         });
 
+    }
+
+    private void initDeeplink() {
+        Uri data = activity.getIntent().getData();
+        if (data != null && data.isHierarchical()) {
+            String url = activity.getIntent().getDataString();
+            if (isURLValid(url)) {
+                askDownload(url);
+            }
+        }
+    }
+
+    private void initReceive() {
+        Intent intent = activity.getIntent();
+        String action = intent.getAction();
+        String type = intent.getType();
+
+        if (action.equals(Intent.ACTION_SEND) && type != null) {
+            if (type.equals("text/plain")) {
+                String url = intent.getStringExtra(Intent.EXTRA_TEXT);
+                if (isURLValid(url)) {
+                    askDownload(url);
+                }
+            }
+        }
+    }
+
+    private void askDownload(String url) {
+        activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
+                .setTitle("Cloud File")
+                .setMessage("Do you want to download the file from this link:\n\n"+url)
+                .setPositiveButton(R.string.okay, null)
+                .setNegativeButton(R.string.cancel, null)
+                .create()).show();
+    }
+
+    @Contract(pure = true)
+    private boolean isURLValid(@NotNull String url) {
+        return url.contains("gs://hotdrop-420.appspot.com");
     }
 
     private void moveSpeedDial(boolean up) {

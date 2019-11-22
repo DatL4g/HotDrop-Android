@@ -28,13 +28,14 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.interaapps.firebasemanager.auth.EmailAuth;
 
 public class InteraAuth {
 
-    private Activity activity;
+    private AdvancedActivity activity;
 
-    public InteraAuth(Activity activity) {
+    public InteraAuth(AdvancedActivity activity) {
         this.activity = activity;
     }
 
@@ -54,10 +55,10 @@ public class InteraAuth {
         webSettings.setJavaScriptEnabled(true);
         webView.loadUrl(activity.getString(R.string.intera_auth_url));
         webView.setFocusable(true);
-        AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity, android.R.style.Theme_Material_Light_NoActionBar_Fullscreen)
+        AlertDialog alertDialog = activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle(null)
                 .setView(webView)
-                .create();
+                .create());
         alertDialog.show();
 
         webView.setWebViewClient(new WebViewClient(){

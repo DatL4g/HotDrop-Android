@@ -5,12 +5,18 @@ import android.content.res.Configuration;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
+
+import de.datlag.hotdrop.R;
 import io.github.inflationx.viewpump.ViewPumpContextWrapper;
 
 public abstract class AdvancedActivity extends AppCompatActivity {
@@ -44,6 +50,11 @@ public abstract class AdvancedActivity extends AppCompatActivity {
         }
 
         return 112;
+    }
+
+    public AlertDialog applyDialogAnimation(@NotNull AlertDialog alertDialog) {
+        Objects.requireNonNull(alertDialog.getWindow()).getAttributes().windowAnimations = R.style.MaterialDialogAnimation;
+        return alertDialog;
     }
 
     @Override

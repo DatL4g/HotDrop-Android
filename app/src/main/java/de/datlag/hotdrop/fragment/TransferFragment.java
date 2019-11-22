@@ -72,7 +72,7 @@ public class TransferFragment extends Fragment {
         hostName.setText(hostCheckedName);
 
         disconnectHost.setOnClickListener((View view) -> {
-                new MaterialAlertDialogBuilder(activity)
+                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setTitle(hostCheckedName)
                         .setMessage("Are your sure you want to disconnect?")
                         .setPositiveButton(activity.getString(R.string.ok), (DialogInterface dialogInterface, int i) -> {
@@ -81,7 +81,7 @@ public class TransferFragment extends Fragment {
                                 }
                         })
                         .setNegativeButton(activity.getString(R.string.cancel), null)
-                        .create().show();
+                        .create()).show();
         });
 
         uploadFile.setOnClickListener((View view) -> {

@@ -215,7 +215,7 @@ public class DiscoverHost {
 
         switch (new String(bytes)) {
             case MESSAGE_REQUEST_START_TRANSFER:
-                new MaterialAlertDialogBuilder(activity)
+                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setMessage(senderName + activity.getString(R.string.want2connect))
                         .setPositiveButton(activity.getString(R.string.start), (dialog, which) -> {
                             nearConnect.send(MESSAGE_RESPONSE_ACCEPT_REQUEST.getBytes(), sender);
@@ -223,12 +223,12 @@ public class DiscoverHost {
                         })
                         .setNegativeButton(activity.getString(R.string.cancel), (DialogInterface dialog, int which) -> {
                                 nearConnect.send(MESSAGE_RESPONSE_DECLINE_REQUEST.getBytes(), sender);
-                        }).create().show();
+                        }).create()).show();
                 break;
             case MESSAGE_RESPONSE_DECLINE_REQUEST:
-                new MaterialAlertDialogBuilder(activity)
+                activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setMessage(senderName + activity.getString(R.string.is_busy))
-                        .setNeutralButton(activity.getString(R.string.okay), null).create().show();
+                        .setNeutralButton(activity.getString(R.string.okay), null).create()).show();
                 break;
             case MESSAGE_RESPONSE_ACCEPT_REQUEST:
                 stopDiscoveryAndStartTransfer(sender);

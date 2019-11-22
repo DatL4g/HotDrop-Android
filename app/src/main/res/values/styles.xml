@@ -12,6 +12,11 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
     </style>
 
+    <style name="MaterialDialogAnimation">
+        <item name="android:windowEnterAnimation">@anim/slide_up</item>
+        <item name="android:windowExitAnimation">@anim/slide_down</item>
+    </style>
+
     <style name="FileChooserButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textAppearanceButton">@style/Widget.MaterialComponents.Button.TextButton.Dialog</item>
         <item name="android:textColor">@color/primaryColor</item>

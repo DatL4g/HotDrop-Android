@@ -18,6 +18,7 @@ import com.android.volley.toolbox.Volley;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import io.codetail.animation.ViewAnimationUtils;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
@@ -27,7 +28,7 @@ import lombok.Setter;
 public class InfoPageManager {
 
     @Setter
-    private Activity activity;
+    private AdvancedActivity activity;
 
     @Setter
     private FrameLayout mainLayout;
@@ -45,7 +46,7 @@ public class InfoPageManager {
     private AppCompatImageView helpIcon;
     private static final long duration = 1000;
 
-    public InfoPageManager(Activity activity, FrameLayout mainLayout, FrameLayout infoLayout) {
+    public InfoPageManager(AdvancedActivity activity, FrameLayout mainLayout, FrameLayout infoLayout) {
         this.activity = activity;
         this.mainLayout = mainLayout;
         this.infoLayout = infoLayout;
@@ -58,10 +59,11 @@ public class InfoPageManager {
         });
 
         codeIcon.setOnClickListener((View v) -> {
-            new MaterialAlertDialogBuilder(activity)
+            activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                     .setTitle(activity.getString(R.string.dependencies))
                     .setItems(activity.getResources().getStringArray(R.array.dependencies), null)
                     .setPositiveButton(activity.getString(R.string.okay), null)
+                    .create())
                     .show();
         });
 
@@ -114,11 +116,12 @@ public class InfoPageManager {
 
     public void informationDialog(){
 
-        new MaterialAlertDialogBuilder(activity)
+        activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle("Info App / Creator")
                 .setMessage("All information...")
                 .setPositiveButton(activity.getString(R.string.okay), null)
-                .setNeutralButton(activity.getString(R.string.data_protection_title), (dialogInterface, i) -> privacyPolicies()).show();
+                .setNeutralButton(activity.getString(R.string.data_protection_title), (dialogInterface, i) -> privacyPolicies())
+                .create()).show();
     }
 
     public void privacyPolicies(){
@@ -134,14 +137,15 @@ public class InfoPageManager {
                 response -> {
                     final Spanned markdown = markwon.toMarkdown(response);
 
-                    new MaterialAlertDialogBuilder(activity)
+                    activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                             .setTitle(activity.getString(R.string.data_protection_title))
                             .setMessage(markdown)
                             .setPositiveButton(activity.getString(R.string.okay), null)
                             .setNeutralButton(activity.getString(R.string.open_in_browser), (dialog, which) -> {
                                 Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(activity.getString(R.string.dsgvo_url)));
                                 activity.startActivity(browserIntent);
-                            }).show();
+                            })
+                            .create()).show();
                 }, error -> {
 
         });

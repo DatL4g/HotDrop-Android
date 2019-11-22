@@ -3,6 +3,7 @@ package de.datlag.hotdrop.manager;
 import android.app.Activity;
 import android.util.Log;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -13,18 +14,19 @@ import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.auth.AuthSettings;
 import de.datlag.hotdrop.auth.UserManager;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.view.helper.MaterialSnackbar;
 import de.interaapps.firebasemanager.core.FirebaseManager;
 
 public class SettingsManager {
 
-    private Activity activity;
+    private AdvancedActivity activity;
     private FirebaseManager firebaseManager;
     private String[] settingsOptions;
     private UserManager userManager;
     private AuthSettings authSettings;
 
-    public SettingsManager(Activity activity, FirebaseManager firebaseManager) {
+    public SettingsManager(AdvancedActivity activity, FirebaseManager firebaseManager) {
         this.activity = activity;
         this.firebaseManager = firebaseManager;
 
@@ -38,14 +40,13 @@ public class SettingsManager {
     }
 
     public void open() {
-        new MaterialAlertDialogBuilder(activity)
+        activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle(activity.getString(R.string.settings))
                 .setItems(settingsOptions, (dialog, which) -> {
                     dialog.dismiss();
                     chooseSetting(which);
                 })
-                .setPositiveButton(activity.getString(R.string.close), null)
-                .show();
+                .setPositiveButton(activity.getString(R.string.close), null).create()).show();
     }
 
     public void chooseSetting(int which) {
