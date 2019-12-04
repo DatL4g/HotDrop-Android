@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.adroitandroid.near.model.Host;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Set;
@@ -21,15 +22,18 @@ import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.view.adapter.ChooseHostRecyclerAdapter;
 
 public class ChooseDeviceFragment extends Fragment implements ChooseHostRecyclerAdapter.ItemClickListener {
-    private Set<Host> mHosts;
+    private static Set<Host> mHosts;
     private View rootView;
     private ChooseHostRecyclerAdapter adapter;
     private RecyclerView recyclerView;
 
     private OnFragmentInteractionListener mListener;
 
-    public ChooseDeviceFragment(Set<Host> hosts) {
-        mHosts = hosts;
+    @NotNull
+    @Contract("_ -> new")
+    public static ChooseDeviceFragment newInstance(Set<Host> hosts) {
+        ChooseDeviceFragment.mHosts = hosts;
+        return new ChooseDeviceFragment();
     }
 
     @Override
@@ -64,7 +68,7 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
     }
 
     public void setHosts(Set<Host> hosts) {
-        this.mHosts = hosts;
+        mHosts = hosts;
         setRecyclerGrid();
         adapter.notifyDataSetChanged();
     }

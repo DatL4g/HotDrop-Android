@@ -17,6 +17,10 @@
         <item name="android:windowExitAnimation">@anim/slide_down</item>
     </style>
 
+    <style name="MaterialTextInputLayout">
+        <item name="boxStrokeColor">@android:color/transparent</item>
+    </style>
+
     <style name="FileChooserButtonStyle" parent="Widget.AppCompat.Button.ButtonBar.AlertDialog">
         <item name="android:textAppearanceButton">@style/Widget.MaterialComponents.Button.TextButton.Dialog</item>
         <item name="android:textColor">@color/primaryColor</item>

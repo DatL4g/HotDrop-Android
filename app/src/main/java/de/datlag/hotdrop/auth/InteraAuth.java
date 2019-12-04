@@ -1,11 +1,9 @@
 package de.datlag.hotdrop.auth;
 
-import android.app.Activity;
 import android.content.Context;
 import android.os.Build;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -26,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.extend.AdvancedActivity;
@@ -50,7 +49,6 @@ public class InteraAuth {
 
     public void startLogin(EmailAuth auth, LoginCallback loginCallback) {
         WebView webView = new WebView(activity);
-        clearCookies(activity);
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
         webView.loadUrl(activity.getString(R.string.intera_auth_url));
@@ -109,24 +107,9 @@ public class InteraAuth {
             }
         });
 
-        alertDialog.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
+        Objects.requireNonNull(alertDialog.getWindow()).clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM);
         alertDialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE);
         webView.requestFocus();
-    }
-
-    private static void clearCookies(Context context) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            CookieManager.getInstance().removeAllCookies(null);
-            CookieManager.getInstance().flush();
-        } else {
-            CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(context);
-            cookieSyncManager.startSync();
-            CookieManager cookieManager=CookieManager.getInstance();
-            cookieManager.removeAllCookie();
-            cookieManager.removeSessionCookie();
-            cookieSyncManager.stopSync();
-            cookieSyncManager.sync();
-        }
     }
 
     public interface LoginCallback {

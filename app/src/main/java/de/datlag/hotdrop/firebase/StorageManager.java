@@ -1,8 +1,5 @@
 package de.datlag.hotdrop.firebase;
 
-import android.app.Activity;
-import android.content.ClipData;
-import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.util.Log;
@@ -12,8 +9,6 @@ import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
-import java.util.Objects;
-
 import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.manager.SettingsManager;
@@ -21,14 +16,13 @@ import de.datlag.hotdrop.view.helper.MaterialSnackbar;
 import de.interaapps.firebasemanager.core.FirebaseManager;
 import de.interaapps.firebasemanager.core.auth.Auth;
 
-import static android.content.Context.CLIPBOARD_SERVICE;
-
 public class StorageManager {
     private AdvancedActivity activity;
     private FirebaseManager firebaseManager;
     private SettingsManager settingsManager;
     private FirebaseUser firebaseUser;
     private UploadManager uploadManager;
+    private DownloadManager downloadManager;
 
     public StorageManager(AdvancedActivity activity, FirebaseManager firebaseManager, SettingsManager settingsManager) {
         this.activity = activity;
@@ -41,6 +35,7 @@ public class StorageManager {
     private void init() {
         firebaseUser = getUser();
         uploadManager = new UploadManager(activity, firebaseUser);
+        downloadManager = new DownloadManager(activity, firebaseUser);
     }
 
     private boolean checkLoginValid() {
@@ -48,11 +43,9 @@ public class StorageManager {
             activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                     .setTitle(activity.getString(R.string.account))
                     .setMessage(activity.getString(R.string.upload_info))
-                    .setPositiveButton(activity.getString(R.string.okay), (DialogInterface dialogInterface, int i) -> {
-                        settingsManager.chooseSetting(0);
-                    }).setNegativeButton(activity.getString(R.string.cancel), (DialogInterface dialogInterface, int i) -> {
-                // ToDo: INSERT
-            }).create()).show();
+                    .setPositiveButton(activity.getString(R.string.okay), (DialogInterface dialogInterface, int i) -> settingsManager.chooseSetting(0))
+                    .setNegativeButton(activity.getString(R.string.cancel), (DialogInterface dialogInterface, int i) -> dialogInterface.cancel())
+                    .create()).show();
             return false;
         }
 
@@ -60,7 +53,7 @@ public class StorageManager {
     }
 
     public void upload() {
-        if(checkLoginValid()) {
+        if (checkLoginValid()) {
             uploadManager.startUploadFile(firebaseUser.isAnonymous(), new UploadManager.FileUploadCallback() {
                 @Override
                 public void onSuccess(String downloadUri) {
@@ -75,10 +68,8 @@ public class StorageManager {
                                     sendIntent.setType("text/plain");
                                     activity.startActivity(Intent.createChooser(sendIntent, "Share URL"));
                                 }).setNeutralButton("Copy Link", (dialogInterface, i) -> {
-                            ClipboardManager clipboard = (ClipboardManager) activity.getSystemService(CLIPBOARD_SERVICE);
-                            ClipData clip = ClipData.newPlainText("DownloadUrl", downloadUri);
-                            Objects.requireNonNull(clipboard).setPrimaryClip(clip);
-                        })
+                                    activity.copyText("HotDrop Download URL", downloadUri);
+                                })
                                 .create()).show();
                     } else {
                         Snackbar snackbar = Snackbar.make(activity.findViewById(R.id.coordinator), "File uploaded!", Snackbar.LENGTH_LONG);
@@ -95,6 +86,31 @@ public class StorageManager {
                     Log.e("Upload", exception.getMessage());
                 }
             });
+        }
+    }
+
+    public void download(String url) {
+        if (checkLoginValid()) {
+            if (firebaseUser.isAnonymous()) {
+                downloadManager.startDownload(url, new DownloadManager.FileDownloadCallback() {
+                    @Override
+                    public void onNotFound() {
+                        Log.e("File", "Not found");
+                    }
+
+                    @Override
+                    public void onSuccess() {
+
+                    }
+
+                    @Override
+                    public void onFailed(Exception exception) {
+
+                    }
+                });
+            } else {
+
+            }
         }
     }
 

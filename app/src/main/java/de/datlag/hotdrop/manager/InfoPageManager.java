@@ -1,9 +1,6 @@
 package de.datlag.hotdrop.manager;
 
 import android.animation.Animator;
-import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 import android.text.Spanned;
 import android.view.View;
 import android.view.animation.AccelerateDecelerateInterpolator;
@@ -16,9 +13,11 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
 
 import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.extend.AdvancedActivity;
+import de.datlag.hotdrop.view.helper.MaterialSnackbar;
 import io.codetail.animation.ViewAnimationUtils;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
@@ -54,14 +53,15 @@ public class InfoPageManager {
 
     public void init() {
         githubIcon.setOnClickListener((View v) -> {
-            Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(activity.getString(R.string.github_repo)));
-            activity.startActivity(browserIntent);
+            activity.browserIntent(activity.getString(R.string.github_repo));
         });
 
         codeIcon.setOnClickListener((View v) -> {
             activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                     .setTitle(activity.getString(R.string.dependencies))
-                    .setItems(activity.getResources().getStringArray(R.array.dependencies), null)
+                    .setItems(activity.getResources().getStringArray(R.array.dependencies), (dialog, which) -> {
+                        activity.browserIntent(activity.getResources().getStringArray(R.array.dependencies_link)[which]);
+                    })
                     .setPositiveButton(activity.getString(R.string.okay), null)
                     .create())
                     .show();
@@ -97,7 +97,7 @@ public class InfoPageManager {
             @Override
             public void onAnimationEnd(Animator animation) {
                 mainLayout.setVisibility(View.GONE);
-                mainLayout.setVisibility(View.VISIBLE);
+                infoLayout.setVisibility(View.VISIBLE);
             }
 
             @Override
@@ -119,7 +119,7 @@ public class InfoPageManager {
         activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle("Info App / Creator")
                 .setMessage("All information...")
-                .setPositiveButton(activity.getString(R.string.okay), null)
+                .setPositiveButton(activity.getString(R.string.close), null)
                 .setNeutralButton(activity.getString(R.string.data_protection_title), (dialogInterface, i) -> privacyPolicies())
                 .create()).show();
     }
@@ -142,12 +142,13 @@ public class InfoPageManager {
                             .setMessage(markdown)
                             .setPositiveButton(activity.getString(R.string.okay), null)
                             .setNeutralButton(activity.getString(R.string.open_in_browser), (dialog, which) -> {
-                                Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(activity.getString(R.string.dsgvo_url)));
-                                activity.startActivity(browserIntent);
+                                activity.browserIntent(activity.getString(R.string.dsgvo_url));
                             })
                             .create()).show();
                 }, error -> {
-
+            Snackbar snackbar = Snackbar.make(activity.findViewById(R.id.coordinator), "Error fetching Privacy Policies", Snackbar.LENGTH_LONG);
+            MaterialSnackbar.configSnackbar(activity, snackbar);
+            snackbar.show();
         });
         queue.add(stringRequest);
     }

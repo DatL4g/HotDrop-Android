@@ -1,10 +1,19 @@
 package de.datlag.hotdrop.extend;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
+import android.content.Intent;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
+import android.graphics.drawable.Icon;
+import android.net.Uri;
+import android.os.Build;
 import android.util.TypedValue;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -14,6 +23,8 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Objects;
 
 import de.datlag.hotdrop.R;
@@ -55,6 +66,31 @@ public abstract class AdvancedActivity extends AppCompatActivity {
     public AlertDialog applyDialogAnimation(@NotNull AlertDialog alertDialog) {
         Objects.requireNonNull(alertDialog.getWindow()).getAttributes().windowAnimations = R.style.MaterialDialogAnimation;
         return alertDialog;
+    }
+
+    public void browserIntent(String url) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+        this.startActivity(browserIntent);
+    }
+
+    public void copyText(String description, String text) {
+        ClipboardManager clipboard = (ClipboardManager) this.getSystemService(Context.CLIPBOARD_SERVICE);
+        ClipData clip = ClipData.newPlainText(description, text);
+        Objects.requireNonNull(clipboard).setPrimaryClip(clip);
+    }
+
+    public void createShortcuts() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N_MR1) {
+            ShortcutManager shortcutManager = (ShortcutManager) getSystemService(SHORTCUT_SERVICE);
+            ShortcutInfo shortcutInfo = new ShortcutInfo.Builder(this, "id1")
+                    .setShortLabel("Donate")
+                    .setLongLabel("Donate to help maintain the project")
+                    .setIcon(Icon.createWithResource(this, R.drawable.ic_credit_card_black_24dp))
+                    .setIntent(new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.donate_link))))
+                    .build();
+
+            Objects.requireNonNull(shortcutManager).setDynamicShortcuts(Collections.singletonList(shortcutInfo));
+        }
     }
 
     @Override

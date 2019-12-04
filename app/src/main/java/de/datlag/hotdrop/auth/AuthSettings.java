@@ -1,6 +1,5 @@
 package de.datlag.hotdrop.auth;
 
-import android.app.Activity;
 import android.content.DialogInterface;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;

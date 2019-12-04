@@ -59,7 +59,7 @@
     <string-array name="available_settings">
         <item>Account</item>
         <item>Connectivity</item>
-        <item>Upgrade</item>
+        <item>Donate</item>
     </string-array>
 
     <!-- Sign in Options -->
@@ -72,8 +72,6 @@
 
     <!-- PERMISSION TEXTS -->
     <string-array name="permission_info">
-        <item>The Location Permission is needed to access your device hardware!</item>
-        <item>Your location wont ever be fetched or saved!</item>
         <item>The Storage Permission is needed to access your files and folders.</item>
         <item>Without this permission you are unable to upload or download any file or folder.</item>
     </string-array>
@@ -95,6 +93,8 @@
 
     <!-- LINKS -->
     <string name="utc_date_url" translatable="false">http://worldtimeapi.org/api/timezone/Etc/UTC</string>
+    <string name="donate">Donate</string>
+    <string name="donate_link">http://paypal.me/datlag</string>
 
     <!-- Dependencies -->
     <string-array name="dependencies">
@@ -109,5 +109,19 @@
         <item>Markwon</item>
         <item>android-file-chooser</item>
         <item>ZIP</item>
+    </string-array>
+
+    <string-array name="dependencies_link">
+        <item>https://github.com/Karumi/Dexter</item>
+        <item>https://github.com/interaapps/FirebaseManager-Android</item>
+        <item>https://github.com/InflationX/Calligraphy</item>
+        <item>https://github.com/InflationX/ViewPump</item>
+        <item>https://github.com/ozodrukh/CircularReveal</item>
+        <item>https://github.com/leinardi/FloatingActionButtonSpeedDial</item>
+        <item>https://github.com/bumptech/glide</item>
+        <item>https://github.com/adroitandroid/Near</item>
+        <item>https://github.com/noties/Markwon</item>
+        <item>https://github.com/hedzr/android-file-chooser</item>
+        <item>https://github.com/zeroturnaround/zt-zip</item>
     </string-array>
 </resources>

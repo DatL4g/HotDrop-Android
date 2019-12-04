@@ -1,6 +1,5 @@
 package de.datlag.hotdrop.auth;
 
-import android.app.Activity;
 import android.util.Log;
 
 import androidx.annotation.Nullable;

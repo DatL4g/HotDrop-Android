@@ -311,10 +311,7 @@ public class FileUtil {
     }
 
     public static boolean isParted(@NotNull File file) {
-        if (file.length() > MIN_LARGE_HEAP_SIZE) {
-            return true;
-        }
-        return false;
+        return file.length() > MIN_LARGE_HEAP_SIZE;
     }
 
     public static void writeBytesToFile(byte[] bytes, String file) {

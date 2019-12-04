@@ -1,9 +1,7 @@
 package de.datlag.hotdrop.manager;
 
-import android.app.Activity;
 import android.util.Log;
 
-import androidx.appcompat.app.AlertDialog;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -99,7 +97,7 @@ public class SettingsManager {
                 //Connectivity
                 break;
             case 2:
-                //Billing
+                activity.browserIntent(activity.getString(R.string.donate_link));
                 break;
 
                 default:

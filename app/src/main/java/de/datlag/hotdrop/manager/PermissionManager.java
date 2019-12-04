@@ -1,7 +1,6 @@
 package de.datlag.hotdrop.manager;
 
 import android.Manifest;
-import android.app.Activity;
 import android.content.DialogInterface;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -26,8 +25,7 @@ public class PermissionManager {
 
     public void check() {
         Dexter.withActivity(activity)
-                .withPermissions(Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.READ_EXTERNAL_STORAGE,
+                .withPermissions(Manifest.permission.READ_EXTERNAL_STORAGE,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
                 .withListener(new MultiplePermissionsListener() {
                     @Override

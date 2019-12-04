@@ -21,7 +21,7 @@ import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.fragment.ChooseDeviceFragment;
 import de.datlag.hotdrop.fragment.TransferFragment;
-import github.nisrulz.easydeviceinfo.base.EasyDeviceMod;
+import de.datlag.hotdrop.util.DeviceUtil;
 import io.noties.markwon.Markwon;
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin;
 import io.noties.markwon.ext.tables.TablePlugin;
@@ -37,7 +37,7 @@ public class DiscoverHost {
     private DiscoverHost discoverHost;
     private Markwon markwon;
 
-    public static final String MESSAGE_REQUEST_START_TRANSFER = "start_chat";
+    public static final String MESSAGE_REQUEST_START_TRANSFER = "start_transfer";
     public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
     public static final String MESSAGE_RESPONSE_ACCEPT_REQUEST = "accept_request";
 
@@ -52,7 +52,7 @@ public class DiscoverHost {
                 .setContext(activity)
                 .setDiscoverableTimeoutMillis(Long.MAX_VALUE)
                 .setDiscoveryTimeoutMillis(Long.MAX_VALUE)
-                .setDiscoverablePingIntervalMillis(500)
+                .setDiscoverablePingIntervalMillis(750)
                 .setDiscoveryListener(getNearDiscoveryListener(), Looper.getMainLooper())
                 .build();
 
@@ -70,9 +70,8 @@ public class DiscoverHost {
     }
 
     public void startDiscovery() {
-        EasyDeviceMod easyDeviceMod = new EasyDeviceMod(activity);
         if (!nearDiscovery.isDiscovering()) {
-            nearDiscovery.makeDiscoverable(easyDeviceMod.getDeviceType(activity) + activity.getPackageName() + "_" + Build.MODEL);
+            nearDiscovery.makeDiscoverable(DeviceUtil.getDeviceType(activity) + activity.getPackageName() + DeviceUtil.getDeviceName(activity));
             if (!nearConnect.isReceiving()) {
                 nearConnect.startReceiving();
             }
@@ -114,7 +113,7 @@ public class DiscoverHost {
 
                 if (hosts.size() > 0) {
                     if (chooseDeviceFragment == null) {
-                        chooseDeviceFragment = new ChooseDeviceFragment(hosts);
+                        chooseDeviceFragment = ChooseDeviceFragment.newInstance(hosts);
                     } else {
                         chooseDeviceFragment.setHosts(hosts);
                     }
@@ -243,7 +242,7 @@ public class DiscoverHost {
     private void stopDiscoveryAndStartTransfer(Host host) {
         nearConnect.stopReceiving(false);
         nearDiscovery.stopDiscovery();
-        transferFragment = new TransferFragment(activity, host);
+        transferFragment = TransferFragment.newInstance(activity, host);
         activity.switchFragment(transferFragment, R.id.fragment_view);
     }
 }

@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
 
 import com.google.android.material.snackbar.Snackbar;
 
@@ -19,19 +18,16 @@ public class MaterialSnackbar {
 
     private static int margin = 24;
     private static int actionBarHeight = 112;
-    private static int shadow = 6;
 
     public static void configSnackbar(Activity activity, Snackbar snackbar) {
         getDimensions(activity);
         addMargins(snackbar);
         displayTop(snackbar);
         setCustomBackground(activity, snackbar);
-        ViewCompat.setElevation(snackbar.getView(), shadow);
     }
 
     private static void getDimensions(@NotNull Activity activity) {
         margin = (int) activity.getResources().getDimension(R.dimen.snackbar_margin);
-        shadow = (int) activity.getResources().getDimension(R.dimen.snackbar_shadow);
         TypedValue tv = new TypedValue();
         if (activity.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
         {

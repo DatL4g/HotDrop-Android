@@ -5,9 +5,7 @@
     android:layout_height="match_parent"
     android:id="@+id/info_layout"
     android:background="@color/primaryColor"
-    android:visibility="gone"
-    android:clickable="true"
-    android:focusable="false">
+    android:visibility="gone">
 
     <!-- To render Design set visibility to visible -->
 

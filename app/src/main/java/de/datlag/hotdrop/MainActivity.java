@@ -5,13 +5,16 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatEditText;
 import androidx.appcompat.widget.AppCompatImageView;
+import androidx.appcompat.widget.LinearLayoutCompat;
 import androidx.appcompat.widget.Toolbar;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
@@ -54,10 +57,7 @@ import lombok.Getter;
 
 public class MainActivity extends AdvancedActivity implements ChooseDeviceFragment.OnFragmentInteractionListener {
 
-    //Activity
     private AdvancedActivity activity;
-
-    //MainActivity Views
     private CoordinatorLayout coordinatorLayout;
     private Toolbar toolbar;
     private SpeedDialView speedDialView;
@@ -67,42 +67,27 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
     private AppCompatImageView reverseRevealButton;
     private FrameLayout infoLayout;
     private FrameLayout mainLayout;
-
-    //InfoPage Views
     private AppCompatImageView githubIcon;
     private AppCompatImageView codeIcon;
     private AppCompatImageView helpIcon;
-
-    //Manager
     private PermissionManager permissionManager;
     private InfoPageManager infoPageManager;
     private SettingsManager settingsManager;
     private FirebaseManager firebaseManager;
     private StorageManager storageManager;
-
-    //AdMob
     private AdView adView;
     private AdRequest adRequest;
-
-    //Firebase
     private GoogleAuth googleAuth;
     private EmailAuth emailAuth;
     private OAuth githubAuth;
     private AnonymousAuth anonymousAuth;
-
-    //Markdown
     private Markwon markwon;
-
-    //Fragments
     @Getter
     private SearchDeviceFragment searchDeviceFragment;
-
-    //Fields
     private static final int downloadID = ViewCompat.generateViewId();
     private static final int uploadID = ViewCompat.generateViewId();
     private ArrayList<SpeedDialActionItem> menuItems = new ArrayList<>();
     private boolean adLoaded = false;
-    private boolean adClicked = false;
     private boolean speedDialMoved = false;
     private DiscoverHost discoverHost;
 
@@ -122,6 +107,7 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
     }
 
     private void initImportant() {
+        createShortcuts();
         permissionManager = new PermissionManager(activity);
         permissionManager.check();
 
@@ -186,7 +172,7 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
                 .usePlugin(HtmlPlugin.create())
                 .build();
 
-        searchDeviceFragment = new SearchDeviceFragment(activity, discoverHost);
+        searchDeviceFragment = SearchDeviceFragment.newInstance(activity, discoverHost);
         switchFragment(searchDeviceFragment, R.id.fragment_view);
 
         infoPageManager = new InfoPageManager(activity, mainLayout, infoLayout);
@@ -218,18 +204,6 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
                 adLoaded = false;
                 moveSpeedDial(false);
             }
-
-            @Override
-            public void onAdLeftApplication() {
-                super.onAdLeftApplication();
-                adClicked = true;
-            }
-
-            @Override
-            public void onAdClicked() {
-                super.onAdClicked();
-                adClicked = true;
-            }
         });
 
         revealButton.setOnClickListener((View v) -> {
@@ -244,7 +218,18 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
                 if (actionItem.getId() == uploadID) {
                     storageManager.upload();
                 } else if (actionItem.getId() == downloadID) {
-                    //download
+                    LayoutInflater inflater = activity.getLayoutInflater();
+                    LinearLayoutCompat linearLayoutCompat = new LinearLayoutCompat(activity);
+                    inflater.inflate(R.layout.download_dialog, linearLayoutCompat);
+                    AppCompatEditText appCompatEditText = linearLayoutCompat.findViewById(R.id.download_edittext);
+                    activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
+                            .setTitle("Download file")
+                            .setView(linearLayoutCompat)
+                            .setPositiveButton(activity.getString(R.string.okay), (dialog, which) -> {
+                                storageManager.download(String.valueOf(appCompatEditText.getText()));
+                            })
+                            .setNegativeButton(activity.getString(R.string.cancel), null)
+                            .create()).show();
                 }
                 return false;
         });
@@ -274,8 +259,11 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
             if (type.equals("text/plain")) {
                 String url = intent.getStringExtra(Intent.EXTRA_TEXT);
                 if (isURLValid(url)) {
+                    Log.e("Download", url);
                     askDownload(url);
                 }
+            } else {
+                //ToDo: upload or search device
             }
         }
     }
@@ -284,8 +272,15 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
         activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                 .setTitle("Cloud File")
                 .setMessage("Do you want to download the file from this link:\n\n"+url)
-                .setPositiveButton(R.string.okay, null)
-                .setNegativeButton(R.string.cancel, null)
+                .setPositiveButton(R.string.okay, (dialog, which) -> {
+                    storageManager.download(url);
+                })
+                .setNegativeButton(R.string.cancel, (dialog, which) -> {
+                    dialog.cancel();
+                })
+                .setNeutralButton("Copy Link", (dialog, which) -> {
+                    activity.copyText("HotDrop Download URL", url);
+                })
                 .create()).show();
     }
 
@@ -345,10 +340,7 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
     @Override
     protected void onResume() {
         super.onResume();
-        if (adClicked) {
-            moveSpeedDial(true);
-            adClicked = false;
-        }
+        moveSpeedDial(true);
     }
 
     @Override

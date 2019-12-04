@@ -2,12 +2,10 @@ package de.datlag.hotdrop.firebase;
 
 import android.app.Activity;
 import android.net.Uri;
-import android.util.Log;
 
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
@@ -17,10 +15,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Random;
 
 import de.datlag.hotdrop.util.DateChecker;
@@ -93,7 +89,7 @@ public class UploadManager {
         StorageReference uploadRef;
         String randomId = docID+randomString(64)+file.getName();
         if (isAnonym) {
-            uploadRef = storageReference.child("anonym/" + randomId);
+            uploadRef = storageReference.child("anonym/" + docID);
         } else {
             uploadRef = storageReference.child("normal/" + firebaseUser.getUid() + "/" + randomId);
         }

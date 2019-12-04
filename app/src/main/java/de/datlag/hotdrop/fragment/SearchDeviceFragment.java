@@ -1,6 +1,5 @@
 package de.datlag.hotdrop.fragment;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,21 +14,23 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import org.jetbrains.annotations.NotNull;
 
 import de.datlag.hotdrop.R;
+import de.datlag.hotdrop.extend.AdvancedActivity;
 import de.datlag.hotdrop.p2p.DiscoverHost;
 import de.datlag.hotdrop.view.animation.CircularAnimation;
 
 public class SearchDeviceFragment extends Fragment {
 
-    private Activity activity;
+    private static AdvancedActivity activity;
     private View rootView;
     private FloatingActionButton searchFAB;
     private boolean search = false;
     private CircularAnimation rotateAnimation;
-    private DiscoverHost discoverHost;
+    private static DiscoverHost discoverHost;
 
-    public SearchDeviceFragment(Activity activity, DiscoverHost discoverHost) {
-        this.activity = activity;
-        this.discoverHost = discoverHost;
+    public static SearchDeviceFragment newInstance(AdvancedActivity activity, DiscoverHost discoverHost) {
+        SearchDeviceFragment.activity = activity;
+        SearchDeviceFragment.discoverHost = discoverHost;
+        return new SearchDeviceFragment();
     }
 
     @Override
