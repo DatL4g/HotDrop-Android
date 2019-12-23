@@ -1,11 +1,23 @@
 package de.datlag.hotdrop.auth;
 
 import android.content.DialogInterface;
+import android.text.format.DateFormat;
+
+import androidx.core.os.LocaleListCompat;
 
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
+import com.google.firebase.Timestamp;
 
 import org.jetbrains.annotations.NotNull;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
+import java.util.Objects;
+import java.util.TimeZone;
 
 import de.datlag.hotdrop.R;
 import de.datlag.hotdrop.extend.AdvancedActivity;
@@ -42,7 +54,9 @@ public class AuthSettings {
             public void onSuccess(String username) {
                 activity.applyDialogAnimation(new MaterialAlertDialogBuilder(activity)
                         .setTitle("Account")
-                        .setMessage("Logged in as "+username)
+                        .setMessage("Logged in as "+username
+                                +"\nCreated at: "+ getDate(Objects.requireNonNull(userManager.getFirebaseUser().getMetadata()).getCreationTimestamp())
+                                +"\nLast login: "+ getDate(userManager.getFirebaseUser().getMetadata().getLastSignInTimestamp()))
                         .setPositiveButton(activity.getString(R.string.okay), null)
                         .setNeutralButton("Logout", (DialogInterface dialogInterface, int i) -> {
                                 userManager.logout(new UserManager.LogoutCallback() {
@@ -67,6 +81,11 @@ public class AuthSettings {
 
             }
         });
+    }
+
+    private String getDate(long schlong) {
+        SimpleDateFormat sfd = new SimpleDateFormat("dd.MM.yyyy", LocaleListCompat.getDefault().get(0));
+        return sfd.format(new Date(schlong));
     }
 
     public interface ProviderCallback {

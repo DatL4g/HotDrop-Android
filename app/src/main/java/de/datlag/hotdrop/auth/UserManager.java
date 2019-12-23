@@ -23,6 +23,7 @@ import de.interaapps.firebasemanager.auth.GoogleAuth;
 import de.interaapps.firebasemanager.auth.OAuth;
 import de.interaapps.firebasemanager.core.FirebaseManager;
 import de.interaapps.firebasemanager.core.auth.Auth;
+import lombok.Getter;
 
 public class UserManager {
 
@@ -30,6 +31,8 @@ public class UserManager {
     private FirebaseManager firebaseManager;
     private InteraAccount interaAccount;
     private InteraAuth interaAuth;
+    @Getter
+    private FirebaseUser firebaseUser;
 
     public UserManager(AdvancedActivity activity, FirebaseManager firebaseManager) {
         this.activity = activity;
@@ -47,6 +50,7 @@ public class UserManager {
         for (Auth auth : firebaseManager.getLogin()) {
             if (auth.getUser() != null) {
                 returnValue = true;
+                firebaseUser = auth.getUser();
                 break;
             }
         }
