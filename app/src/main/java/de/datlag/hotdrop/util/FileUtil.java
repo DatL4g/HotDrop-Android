@@ -44,6 +44,7 @@ public class FileUtil {
 
     public static void chooseFile(Activity activity, FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .enableDpad(true)
                 .withChosenListener(fileChooseCallback::onChosen)
                 .withOnCancelListener(DialogInterface::cancel)
                 .build()
@@ -52,6 +53,7 @@ public class FileUtil {
 
     public static void chooseFile(Activity activity, FileFilter fileFilter, FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .enableDpad(true)
                 .withFilter(fileFilter)
                 .withChosenListener(fileChooseCallback::onChosen)
                 .withOnCancelListener(DialogInterface::cancel)
@@ -61,6 +63,7 @@ public class FileUtil {
 
     public static void chooseFolder(Activity activity, FolderChooseCallback folderChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .enableDpad(true)
                 .withFilter(true, false)
                 .withChosenListener((path, pathFile) -> {
                     try {
@@ -76,6 +79,7 @@ public class FileUtil {
 
     public static void chooseFile(Activity activity, String startingPath, @NotNull FileChooseCallback fileChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .enableDpad(true)
                 .withStartFile(startingPath)
                 .withChosenListener(fileChooseCallback::onChosen)
                 .withOnCancelListener(DialogInterface::cancel)
@@ -85,6 +89,7 @@ public class FileUtil {
 
     public static void chooseFolder(Activity activity, String startingPath, FolderChooseCallback folderChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .enableDpad(true)
                 .withFilter(true, false)
                 .withStartFile(startingPath)
                 .withChosenListener((String path, File pathFile) -> {
@@ -101,6 +106,7 @@ public class FileUtil {
 
     public static void chooseAny(Activity activity, AnyChooseCallback anyChooseCallback) {
         new ChooserDialog(activity, R.style.FileChooserStyle)
+                .enableDpad(true)
                 .withFilter(false, true)
                 .withChosenListener((String dir, File dirFile) -> {
                         if (isFile(dir)) {
