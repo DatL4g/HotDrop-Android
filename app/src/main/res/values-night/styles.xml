@@ -1,0 +1,12 @@
+<resources>
+
+    <style name="AppTheme.DayNight" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/primaryColor</item>
+        <item name="colorPrimaryDark">@color/primaryDarkColor</item>
+        <item name="colorAccent">@color/primaryLightColor</item>
+        <item name="android:selectableItemBackground">@color/primaryLightColor</item>
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.MaterialComponents.MaterialAlertDialog</item>
+        <item name="colorSurface">@android:color/background_dark</item>
+    </style>
+
+</resources>

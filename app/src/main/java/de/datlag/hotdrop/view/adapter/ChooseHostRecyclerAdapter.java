@@ -62,7 +62,7 @@ public class ChooseHostRecyclerAdapter extends RecyclerView.Adapter<ChooseHostRe
                 holder.deviceFAB.setImageResource(R.drawable.ic_watch_white_24dp);
                 break;
         }
-        String deviceUserName = hostName.substring(hostName.indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
+        String deviceUserName = hostName.substring(hostName.indexOf(activity.getPackageName()) + activity.getPackageName().length());
         holder.deviceName.setText(deviceUserName);
 
         holder.deviceContainer.setOnFocusChangeListener((View view, boolean b) -> {

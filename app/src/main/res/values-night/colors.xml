@@ -1,0 +1,7 @@
+<!--?xml version="1.0" encoding="UTF-8"?-->
+<resources>
+  <color name="settingIcon">#FFFFFFFF</color>
+  <color name="snackbarText">#FFFFFFFF</color>
+  <color name="chooseDeviceText">#FFFFFFFF</color>
+  <color name="transferDeviceText">#FFFFFFFF</color>
+</resources>

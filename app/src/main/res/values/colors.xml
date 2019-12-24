@@ -6,4 +6,9 @@
   <color name="primaryTextColor">#ffffff</color>
   <color name="listBackgroundTint">#40ff9b8e</color>
   <color name="snackbarBackground">#323232</color>
+
+  <color name="settingIcon">#FF000000</color>
+  <color name="snackbarText">#FFFFFFFF</color>
+  <color name="chooseDeviceText">#FF000000</color>
+  <color name="transferDeviceText">#FF000000</color>
 </resources>

@@ -5,6 +5,7 @@ import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.ViewGroup;
 
+import androidx.appcompat.widget.AppCompatTextView;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 
@@ -24,6 +25,7 @@ public class MaterialSnackbar {
         addMargins(snackbar);
         displayTop(snackbar);
         setCustomBackground(activity, snackbar);
+        setCustomTextColor(activity, snackbar);
     }
 
     private static void getDimensions(@NotNull Activity activity) {
@@ -43,6 +45,11 @@ public class MaterialSnackbar {
 
     private static void setCustomBackground(@NotNull Activity activity, @NotNull Snackbar snackbar) {
         snackbar.getView().setBackground(ContextCompat.getDrawable(activity, R.drawable.snackbar_background));
+    }
+
+    private static void setCustomTextColor(Activity activity, Snackbar snackbar) {
+        AppCompatTextView appCompatTextView = snackbar.getView().findViewById(R.id.snackbar_text);
+        appCompatTextView.setTextColor(ContextCompat.getColor(activity, R.color.snackbarText));
     }
 
     private static void displayTop(@NotNull Snackbar snackbar) {

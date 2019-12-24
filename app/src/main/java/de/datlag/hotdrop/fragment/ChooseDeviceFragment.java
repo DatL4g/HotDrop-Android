@@ -106,7 +106,6 @@ public class ChooseDeviceFragment extends Fragment implements ChooseHostRecycler
 
     @Override
     public void onItemClick(View view, int position) {
-        Log.e("Item", ((Host) mHosts.toArray()[position]).getName());
         if (mListener != null) {
             mListener.onChooseFragmentInteraction((Host) mHosts.toArray()[position]);
         }

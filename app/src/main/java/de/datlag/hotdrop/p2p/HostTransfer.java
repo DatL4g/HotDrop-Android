@@ -29,7 +29,8 @@ public class HostTransfer {
     private NearConnect nearConnect;
     private HostTransfer hostTransfer;
     private ReceiveFileUtil receiveFileUtil;
-    public static final String HOST_DISCONNECTED = "host_disconnected";
+    public static final String HOST_DISCONNECTED = "HOST_DISCONNECTED";
+    private AlertDialog alertDialog;
 
     public HostTransfer(AdvancedActivity activity) {
         this.activity = activity;
@@ -64,7 +65,7 @@ public class HostTransfer {
     }
 
     public void startTransfer(File file) {
-        AlertDialog alertDialog = new MaterialAlertDialogBuilder(activity)
+        alertDialog = new MaterialAlertDialogBuilder(activity)
                 .setView(R.layout.progress_dialog)
                 .setCancelable(false)
                 .create();
@@ -93,7 +94,7 @@ public class HostTransfer {
             }
             @Override
             public void onSendComplete(long jobId) {
-
+                alertDialog.cancel();
             }
             @Override
             public void onSendFailure(Throwable e, long jobId) {

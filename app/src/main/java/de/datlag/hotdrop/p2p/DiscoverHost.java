@@ -3,6 +3,7 @@ package de.datlag.hotdrop.p2p;
 import android.content.DialogInterface;
 import android.os.Build;
 import android.os.Looper;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 
@@ -14,6 +15,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Set;
 
 import de.datlag.hotdrop.MainActivity;
@@ -36,6 +39,7 @@ public class DiscoverHost {
     private TransferFragment transferFragment;
     private DiscoverHost discoverHost;
     private Markwon markwon;
+    private InetAddress inetAddress;
 
     public static final String MESSAGE_REQUEST_START_TRANSFER = "start_transfer";
     public static final String MESSAGE_RESPONSE_DECLINE_REQUEST = "decline_request";
@@ -105,8 +109,12 @@ public class DiscoverHost {
         return new NearDiscovery.Listener() {
             @Override
             public void onPeersUpdate(Set<Host> hosts) {
+                inetAddress = InetAddress.getLoopbackAddress();
                 for (Host host : hosts) {
                     if (!host.getName().contains(activity.getPackageName())) {
+                        hosts.remove(host);
+                    }
+                    if(host.getHostAddress().equals(inetAddress.getHostAddress())) {
                         hosts.remove(host);
                     }
                 }
@@ -192,25 +200,18 @@ public class DiscoverHost {
             }
 
             @Override
-            public void onSendComplete(long jobId) {
-                // jobId is the same as the return value of NearConnect.send(), an approximate epoch time of the send
-            }
+            public void onSendComplete(long jobId) {}
 
             @Override
-            public void onSendFailure(Throwable e, long jobId) {
-                // handle failed sends here
-            }
+            public void onSendFailure(Throwable e, long jobId) {}
 
             @Override
-            public void onStartListenFailure(Throwable e) {
-                // This tells that the NearConnect.startReceiving() didn't go through properly.
-                // Common cause would be that another instance of NearConnect is already listening and it's NearConnect.stopReceiving() needs to be called first
-            }
+            public void onStartListenFailure(Throwable e) {}
         };
     }
 
     private void startHostTransfer(@NotNull final Host sender, byte[] bytes) {
-        String senderName = sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length() +1);
+        String senderName = sender.getName().substring(sender.getName().indexOf(activity.getPackageName()) + activity.getPackageName().length());
 
         switch (new String(bytes)) {
             case MESSAGE_REQUEST_START_TRANSFER:

@@ -146,12 +146,14 @@ public class MainActivity extends AdvancedActivity implements ChooseDeviceFragme
     }
 
     private void initViewLogic() {
+        /*
         Glide.with(activity)
                 .load(ContextCompat.getDrawable(activity, R.drawable.circles))
                 .centerCrop()
                 .apply(new RequestOptions().fitCenter())
                 .override(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels)
                 .into(backgroundImage);
+         */
 
         menuItems.add(new SpeedDialActionItem.Builder(downloadID, R.drawable.ic_cloud_download_white_24dp)
                 .setFabImageTintColor(Color.WHITE)
