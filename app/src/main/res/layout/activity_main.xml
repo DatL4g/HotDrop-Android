@@ -111,20 +111,6 @@
                     android:layout_gravity="bottom|center_horizontal"
                     app:adSize="BANNER"
                     app:adUnitId="@string/admob_banner_id" />
-
-                    <com.leinardi.android.speeddial.SpeedDialView
-                        android:id="@+id/speedDial"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="bottom|end"
-                        android:layout_margin="8dp"
-                        app:sdMainFabOpenedSrc="@drawable/ic_close_white_24dp"
-                        app:sdMainFabClosedSrc="@drawable/ic_cloud_white_24dp"
-                        app:sdExpansionMode="top"
-                        app:sdMainFabClosedBackgroundColor="@color/primaryColor"
-                        app:sdMainFabOpenedBackgroundColor="@color/primaryColor"
-                        app:sdMainFabClosedIconColor="@android:color/white"
-                        app:sdMainFabOpenedIconColor="@android:color/white" />
             </FrameLayout>
 
                 <include

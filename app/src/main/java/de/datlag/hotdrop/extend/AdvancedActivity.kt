@@ -96,17 +96,4 @@ abstract class AdvancedActivity : AppCompatActivity() {
             shortcutManager.dynamicShortcuts = listOf(shortcutInfo)
         }
     }
-
-    override fun onConfigurationChanged(newConfig: Configuration) {
-        super.onConfigurationChanged(newConfig)
-        val orientation = newConfig.orientation
-        if (orientation == Configuration.ORIENTATION_LANDSCAPE) {
-            onOrientationLandscape()
-        } else {
-            onOrientationPortrait()
-        }
-    }
-
-    protected abstract fun onOrientationPortrait()
-    protected abstract fun onOrientationLandscape()
 }
