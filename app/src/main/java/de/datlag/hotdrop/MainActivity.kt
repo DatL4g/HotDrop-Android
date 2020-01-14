@@ -1,25 +1,30 @@
 package de.datlag.hotdrop
 
+import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
 import android.graphics.Color
+import android.graphics.drawable.Animatable
+import android.graphics.drawable.VectorDrawable
 import android.os.Bundle
-import android.util.Log
-import android.view.View
 import android.view.ViewGroup.MarginLayoutParams
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.LinearLayoutCompat
 import androidx.appcompat.widget.Toolbar
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
+import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat
 import com.adroitandroid.near.model.Host
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.play.core.appupdate.AppUpdateManagerFactory
+import com.google.android.play.core.install.model.AppUpdateType
+import com.google.android.play.core.install.model.UpdateAvailability
 import com.leinardi.android.speeddial.SpeedDialActionItem
 import com.leinardi.android.speeddial.SpeedDialView
 import de.datlag.hotdrop.extend.AdvancedActivity
@@ -35,15 +40,13 @@ import de.interaapps.firebasemanager.core.FirebaseManager
 import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.html.HtmlPlugin
-import lombok.Getter
-import org.jetbrains.annotations.Contract
 import java.util.*
 
 class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
     private val activity: AdvancedActivity = this@MainActivity
     private val toolbar: Toolbar by bindView(R.id.toolbar)
+    val backgroundImage: AppCompatImageView by bindView(R.id.background_image)
     private val speedDialView: SpeedDialView by bindView(R.id.speedDial)
-    private val backgroundImage: AppCompatImageView by bindView(R.id.background_image)
     private val tuneButton: AppCompatImageView by bindView(R.id.tune_button)
     private val revealButton: AppCompatImageView by bindView(R.id.reveal_button)
     private val reverseRevealButton: AppCompatImageView by bindView(R.id.reverse_reveal)
@@ -88,6 +91,8 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
 
     private fun initImportant() {
         createShortcuts()
+        checkUpdate()
+
         permissionManager = PermissionManager(activity)
         permissionManager.check()
         MobileAds.initialize(activity, getString(R.string.admob_app_id))
@@ -106,14 +111,7 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
         discoverHost = DiscoverHost(activity)
     }
 
-    private fun initViewLogic() { /*
-        Glide.with(activity)
-                .load(ContextCompat.getDrawable(activity, R.drawable.circles))
-                .centerCrop()
-                .apply(new RequestOptions().fitCenter())
-                .override(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels)
-                .into(backgroundImage);
-         */
+    private fun initViewLogic() {
         menuItems.add(SpeedDialActionItem.Builder(downloadID, R.drawable.ic_cloud_download_white_24dp)
                 .setFabImageTintColor(Color.WHITE)
                 .create())
@@ -220,7 +218,6 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
                 .create()).show()
     }
 
-    @Contract(pure = true)
     private fun isURLValid(url: String?): Boolean {
         if (url != null) {
             return url.contains("gs://hotdrop-420.appspot.com")
@@ -246,8 +243,29 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
         }
     }
 
+    private fun checkUpdate() {
+        val appUpdateManager = AppUpdateManagerFactory.create(activity)
+        val appUpdateInfoTask = appUpdateManager.appUpdateInfo
+
+        appUpdateInfoTask.addOnSuccessListener {
+            if(it.updateAvailability() == UpdateAvailability.UPDATE_AVAILABLE
+                    && it.isUpdateTypeAllowed(AppUpdateType.IMMEDIATE)) {
+                appUpdateManager.startUpdateFlowForResult(it, AppUpdateType.IMMEDIATE, activity, UPDATE_REQUEST_CODE)
+            }
+        }
+    }
+
     override fun onChooseFragmentInteraction(host: Host?) {
-        discoverHost.send(host, DiscoverHost.MESSAGE_REQUEST_START_TRANSFER.toByteArray())
+        host?.let {
+            activity.applyDialogAnimation(MaterialAlertDialogBuilder(activity)
+                    .setTitle(it.name)
+                    .setMessage("Request Connection with ${host.name}")
+                    .setPositiveButton("Request") { _, _ ->
+                        discoverHost.send(host, DiscoverHost.MESSAGE_REQUEST_START_TRANSFER.toByteArray())
+                    }
+                    .setNeutralButton("Cancel", null)
+                    .create()).show()
+        }
     }
 
     override fun onOrientationLandscape() {
@@ -282,11 +300,25 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-        googleAuth.onActivityResult(requestCode, resultCode, data)
+        if(requestCode == UPDATE_REQUEST_CODE) {
+            if(resultCode != Activity.RESULT_OK) {
+                activity.applyDialogAnimation(MaterialAlertDialogBuilder(activity)
+                        .setTitle("Update")
+                        .setMessage("Update flow failed!\nTry again or update in Google Play Store")
+                        .setPositiveButton("Try again"){
+                            _, _ -> checkUpdate()
+                        }
+                        .setNegativeButton("Google Play") {
+                            _, _ -> browserIntent("https://play.google.com/store/apps/details?id=de.datlag.hotdrop")
+                        }
+                        .create()).show()
+            }
+        } else googleAuth.onActivityResult(requestCode, resultCode, data)
     }
 
     companion object {
         private val downloadID = ViewCompat.generateViewId()
         private val uploadID = ViewCompat.generateViewId()
+        private const val UPDATE_REQUEST_CODE = 1337
     }
 }

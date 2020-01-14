@@ -12,7 +12,6 @@ import com.adroitandroid.near.model.Host
 import de.datlag.hotdrop.R
 import de.datlag.hotdrop.view.adapter.ChooseHostRecyclerAdapter
 import de.datlag.hotdrop.view.adapter.ChooseHostRecyclerAdapter.ItemClickListener
-import org.jetbrains.annotations.Contract
 
 class ChooseDeviceFragment : Fragment(), ItemClickListener {
     private lateinit var rootView: View
@@ -80,8 +79,8 @@ class ChooseDeviceFragment : Fragment(), ItemClickListener {
 
     companion object {
         private var mHosts: Set<Host>? = null
+
         @JvmStatic
-        @Contract("_ -> new")
         fun newInstance(hosts: Set<Host>?): ChooseDeviceFragment {
             mHosts = hosts
             return ChooseDeviceFragment()

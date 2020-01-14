@@ -1,6 +1,7 @@
 package de.datlag.hotdrop.fragment
 
 import android.content.DialogInterface
+import android.graphics.drawable.Animatable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -15,7 +16,6 @@ import de.datlag.hotdrop.R
 import de.datlag.hotdrop.extend.AdvancedActivity
 import de.datlag.hotdrop.p2p.HostTransfer
 import de.datlag.hotdrop.util.FileUtil
-import org.jetbrains.annotations.Contract
 import java.io.File
 
 class TransferFragment : Fragment() {
@@ -26,6 +26,7 @@ class TransferFragment : Fragment() {
     private lateinit var disconnectHost: FloatingActionButton
     private lateinit var uploadFile: FloatingActionButton
     private lateinit var hostCheckedName: String
+    private var animatable: Animatable? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
@@ -39,6 +40,13 @@ class TransferFragment : Fragment() {
         hostName = rootView.findViewById(R.id.host_name)
         disconnectHost = rootView.findViewById(R.id.disconnect_host)
         uploadFile = rootView.findViewById(R.id.upload_file)
+
+        if(advancedActivity is MainActivity) {
+            animatable = (advancedActivity as MainActivity).backgroundImage.drawable as Animatable
+        }
+        if(animatable != null && animatable!!.isRunning) {
+            animatable!!.stop()
+        }
     }
 
     private fun initLogic() {

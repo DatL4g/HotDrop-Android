@@ -20,7 +20,6 @@ import io.codetail.animation.ViewAnimationUtils
 import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.html.HtmlPlugin
-import lombok.Setter
 import kotlin.math.hypot
 import kotlin.math.max
 

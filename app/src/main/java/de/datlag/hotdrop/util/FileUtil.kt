@@ -12,7 +12,6 @@ import com.google.gson.Gson
 import com.google.gson.JsonObject
 import com.obsez.android.lib.filechooser.ChooserDialog
 import de.datlag.hotdrop.R
-import org.jetbrains.annotations.Contract
 import org.zeroturnaround.zip.ZipUtil
 import java.io.*
 import java.net.URLConnection

@@ -2,8 +2,6 @@ package de.datlag.hotdrop.auth
 
 import com.google.gson.Gson
 import com.google.gson.JsonObject
-import lombok.Getter
-import lombok.Setter
 
 class InteraAccount(response: String) {
     private var `object`: JsonObject = Gson().fromJson(response, JsonObject::class.java)

@@ -93,7 +93,7 @@ abstract class AdvancedActivity : AppCompatActivity() {
                     .setIcon(Icon.createWithResource(this, R.drawable.ic_credit_card_black_24dp))
                     .setIntent(Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.donate_link))))
                     .build()
-            Objects.requireNonNull(shortcutManager).dynamicShortcuts = listOf(shortcutInfo)
+            shortcutManager.dynamicShortcuts = listOf(shortcutInfo)
         }
     }
 

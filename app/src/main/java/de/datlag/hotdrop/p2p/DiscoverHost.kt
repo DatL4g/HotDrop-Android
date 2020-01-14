@@ -18,7 +18,6 @@ import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
-import org.jetbrains.annotations.Contract
 import java.net.InetAddress
 
 class DiscoverHost(private val activity: AdvancedActivity) {

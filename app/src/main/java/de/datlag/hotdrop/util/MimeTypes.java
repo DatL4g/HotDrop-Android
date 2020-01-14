@@ -1,8 +1,5 @@
 package de.datlag.hotdrop.util;
 
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.HashMap;
 
 public class MimeTypes {
@@ -456,14 +453,14 @@ public class MimeTypes {
     /**
      * Simply returns MIME type or <code>null</code> if no type is found.
      */
-    public static String lookupMimeType(@NotNull String ext) {
+    public static String lookupMimeType(String ext) {
         return mimeTypeMapping.get(ext.toLowerCase());
     }
 
     /**
      * Simply returns Ext or <code>null</code> if no Mimetype is found.
      */
-    public static String lookupExt(@NotNull String mimeType) {
+    public static String lookupExt(String mimeType) {
         return extMapping.get(mimeType.toLowerCase());
     }
 
@@ -479,7 +476,6 @@ public class MimeTypes {
         return ext;
     }
 
-    @Contract(pure = true)
     public static boolean isImage(String mimeType) {
         if (mimeType == null) {
             return false;
@@ -511,8 +507,7 @@ public class MimeTypes {
         return returnValue;
     }
 
-    @Contract(pure = true)
-    public static boolean isVideo(@NotNull String mimeType) {
+    public static boolean isVideo(String mimeType) {
         boolean returnValue = false;
 
         switch (mimeType) {
@@ -529,8 +524,7 @@ public class MimeTypes {
         return returnValue;
     }
 
-    @Contract(pure = true)
-    public static boolean isAudio(@NotNull String mimeType) {
+    public static boolean isAudio(String mimeType) {
         boolean returnValue = false;
 
         switch (mimeType) {

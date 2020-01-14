@@ -17,7 +17,7 @@ class HostTransfer(val activity: AdvancedActivity, val host: Host? = null) {
     private var nearConnect: NearConnect
     private var hostTransfer: HostTransfer = this
     private var receiveFileUtil: ReceiveFileUtil
-    private lateinit var alertDialog: AlertDialog
+    private var alertDialog: AlertDialog? = null
 
     init {
         val peers = ArraySet<Host>()
@@ -39,7 +39,7 @@ class HostTransfer(val activity: AdvancedActivity, val host: Host? = null) {
                 .setView(R.layout.progress_dialog)
                 .setCancelable(false)
                 .create()
-        activity.applyDialogAnimation(alertDialog).show()
+        activity.applyDialogAnimation(alertDialog!!).show()
         val bytes = FileUtil.byteArraysFromFile(file!!)
         for (i in bytes.indices) {
             hostTransfer.send(host, FileUtil.jsonObjectToBytes(FileUtil.jsonObjectFromFile(activity, file, bytes, i)))
@@ -59,7 +59,7 @@ class HostTransfer(val activity: AdvancedActivity, val host: Host? = null) {
             }
 
             override fun onSendComplete(jobId: Long) {
-                alertDialog.cancel()
+                alertDialog?.cancel()
             }
 
             override fun onSendFailure(e: Throwable, jobId: Long) {}

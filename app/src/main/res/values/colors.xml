@@ -11,4 +11,5 @@
   <color name="snackbarText">#FFFFFFFF</color>
   <color name="chooseDeviceText">#FF000000</color>
   <color name="transferDeviceText">#FF000000</color>
+  <color name="circleColor">#FFF5F5F5</color>
 </resources>
