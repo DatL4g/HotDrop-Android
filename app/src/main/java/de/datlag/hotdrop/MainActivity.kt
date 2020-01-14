@@ -7,7 +7,6 @@ import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
 import com.adroitandroid.near.model.Host
-import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -48,8 +47,6 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
     private lateinit var markwon: Markwon
 
     lateinit var searchDeviceFragment: SearchDeviceFragment
-
-    private var adLoaded = false
     private lateinit var discoverHost: DiscoverHost
 
 
@@ -96,22 +93,6 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
     }
 
     private fun initListener() {
-        adView.adListener = object : AdListener() {
-            override fun onAdLoaded() {
-                super.onAdLoaded()
-                adLoaded = true
-            }
-
-            override fun onAdClosed() {
-                super.onAdClosed()
-                adLoaded = false
-            }
-
-            override fun onAdFailedToLoad(i: Int) {
-                super.onAdFailedToLoad(i)
-                adLoaded = false
-            }
-        }
         revealButton.setOnClickListener { infoPageManager.start(false) }
         reverseRevealButton.setOnClickListener { infoPageManager.start(true) }
 
