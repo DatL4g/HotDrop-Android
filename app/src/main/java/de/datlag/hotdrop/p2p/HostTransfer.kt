@@ -13,7 +13,7 @@ import de.datlag.hotdrop.util.FileUtil
 import de.datlag.hotdrop.util.ReceiveFileUtil
 import java.io.File
 
-class HostTransfer(val activity: AdvancedActivity, val host: Host? = null) {
+class HostTransfer(val activity: AdvancedActivity, val host: Host) {
     private var nearConnect: NearConnect
     private var hostTransfer: HostTransfer = this
     private var receiveFileUtil: ReceiveFileUtil
@@ -30,7 +30,7 @@ class HostTransfer(val activity: AdvancedActivity, val host: Host? = null) {
         receiveFileUtil = ReceiveFileUtil(activity)
     }
 
-    private fun send(host: Host?, bytes: ByteArray?) {
+    private fun send(host: Host, bytes: ByteArray) {
         nearConnect.send(bytes, host)
     }
 
@@ -62,8 +62,8 @@ class HostTransfer(val activity: AdvancedActivity, val host: Host? = null) {
                 alertDialog?.cancel()
             }
 
-            override fun onSendFailure(e: Throwable, jobId: Long) {}
-            override fun onStartListenFailure(e: Throwable) {}
+            override fun onSendFailure(e: Throwable?, jobId: Long) {}
+            override fun onStartListenFailure(e: Throwable?) {}
         }
 
     fun stopTransferAndDisconnect() {

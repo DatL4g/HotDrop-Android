@@ -140,8 +140,8 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
 
     override fun onDestroy() {
         super.onDestroy()
-        activity.finishAffinity()
         discoverHost.stopDiscovery()
+        activity.finishAffinity()
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {

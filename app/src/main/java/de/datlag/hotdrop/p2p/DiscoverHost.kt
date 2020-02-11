@@ -2,6 +2,7 @@ package de.datlag.hotdrop.p2p
 
 import android.content.DialogInterface
 import android.os.Looper
+import android.util.Log
 import com.adroitandroid.near.connect.NearConnect
 import com.adroitandroid.near.discovery.NearDiscovery
 import com.adroitandroid.near.model.Host
@@ -18,7 +19,6 @@ import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.ext.tables.TablePlugin
 import io.noties.markwon.html.HtmlPlugin
-import java.net.InetAddress
 
 class DiscoverHost(private val activity: AdvancedActivity) {
     private var nearDiscovery: NearDiscovery
@@ -26,20 +26,24 @@ class DiscoverHost(private val activity: AdvancedActivity) {
     private var chooseDeviceFragment: ChooseDeviceFragment? = null
     private lateinit var transferFragment: TransferFragment
     private var markwon: Markwon
-    private lateinit var inetAddress: InetAddress
 
     init {
         nearDiscovery = NearDiscovery.Builder()
-                .setContext(activity)
-                .setDiscoverableTimeoutMillis(Long.MAX_VALUE)
-                .setDiscoveryTimeoutMillis(Long.MAX_VALUE)
-                .setDiscoverablePingIntervalMillis(750)
-                .setDiscoveryListener(nearDiscoveryListener, Looper.getMainLooper())
-                .build()
+                .apply {
+                    this.mContext = activity
+                    this.mDiscoverableTimeout = Long.MAX_VALUE
+                    this.mDiscoveryTimeout = Long.MAX_VALUE
+                    this.mDiscoverablePingInterval = 750
+                    this.mListener = nearDiscoveryListener
+                    this.mLooper = Looper.getMainLooper()
+                    this.mRegex = Regex(activity.packageName)
+                }.build()
+
         nearConnect = NearConnect.Builder()
                 .fromDiscovery(nearDiscovery)
                 .setContext(activity)
                 .setListener(nearConnectListener, Looper.getMainLooper())
+                .setPort(8042)
                 .build()
         markwon = Markwon.builder(activity)
                 .usePlugin(StrikethroughPlugin.create())
@@ -50,7 +54,7 @@ class DiscoverHost(private val activity: AdvancedActivity) {
 
     fun startDiscovery() {
         if (!nearDiscovery.isDiscovering) {
-            nearDiscovery.makeDiscoverable(DeviceUtil.getDeviceType(activity).toString() + activity.packageName + DeviceUtil.getDeviceName(activity))
+            nearDiscovery.makeDiscoverable(DeviceUtil.getDeviceType(activity).toString() + DeviceUtil.getDeviceName(activity), activity.packageName)
             if (!nearConnect.isReceiving) {
                 nearConnect.startReceiving()
             }
@@ -71,28 +75,19 @@ class DiscoverHost(private val activity: AdvancedActivity) {
         }
     }
 
-    fun send(host: Host?, bytes: ByteArray?) {
+    fun send(host: Host, bytes: ByteArray) {
         nearConnect.send(bytes, host)
     }
 
 
     private val nearDiscoveryListener: NearDiscovery.Listener
         get() = object : NearDiscovery.Listener {
-            override fun onPeersUpdate(hosts: MutableSet<Host>) {
-                inetAddress = InetAddress.getLoopbackAddress()
-                for (host in hosts) {
-                    if (!host.name.contains(activity.packageName)) {
-                        hosts.remove(host)
-                    }
-                    if (host.hostAddress == inetAddress.hostAddress) {
-                        hosts.remove(host)
-                    }
-                }
-                if (hosts.size > 0) {
+            override fun onPeersUpdate(host: Set<Host>) {
+                if (host.isNotEmpty()) {
                     if (chooseDeviceFragment == null) {
-                        chooseDeviceFragment = newInstance(hosts)
+                        chooseDeviceFragment = newInstance(host)
                     } else {
-                        chooseDeviceFragment!!.setHosts(hosts)
+                        chooseDeviceFragment!!.setHosts(host)
                     }
                     activity.switchFragment(chooseDeviceFragment!!, R.id.fragment_view)
                 } else {
@@ -141,12 +136,12 @@ class DiscoverHost(private val activity: AdvancedActivity) {
             }
 
             override fun onSendComplete(jobId: Long) {}
-            override fun onSendFailure(e: Throwable, jobId: Long) {}
-            override fun onStartListenFailure(e: Throwable) {}
+            override fun onSendFailure(e: Throwable?, jobId: Long) {}
+            override fun onStartListenFailure(e: Throwable?) {}
         }
 
     private fun startHostTransfer(sender: Host, bytes: ByteArray) {
-        val senderName = sender.name.substring(sender.name.indexOf(activity.packageName) + activity.packageName.length)
+        val senderName = sender.name.substring(1)
         when (String(bytes)) {
             MESSAGE_REQUEST_START_TRANSFER -> activity.applyDialogAnimation(MaterialAlertDialogBuilder(activity)
                     .setMessage(senderName + activity.getString(R.string.want2connect))

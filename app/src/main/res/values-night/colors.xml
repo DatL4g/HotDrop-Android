@@ -4,5 +4,5 @@
   <color name="snackbarText">#FFFFFFFF</color>
   <color name="chooseDeviceText">#FFFFFFFF</color>
   <color name="transferDeviceText">#FFFFFFFF</color>
-  <color name="circleColor">#FF1C1C1C</color>
+  <color name="circleColor">#FF3F3F3F</color>
 </resources>

@@ -22,6 +22,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("de.datlag.swapdrop", appContext.getPackageName());
+        assertEquals("de.datlag.hotdrop", appContext.getPackageName());
     }
 }

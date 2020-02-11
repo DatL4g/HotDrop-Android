@@ -51,7 +51,7 @@ class TransferFragment : Fragment() {
 
     private fun initLogic() {
         hostTransfer = HostTransfer(advancedActivity, transferHost)
-        hostCheckedName = transferHost.name.substring(transferHost.name.indexOf(advancedActivity.packageName) + advancedActivity.packageName.length)
+        hostCheckedName = transferHost.name.substring(1)
         hostName.text = hostCheckedName
         disconnectHost.setOnClickListener {
             advancedActivity.applyDialogAnimation(MaterialAlertDialogBuilder(advancedActivity)

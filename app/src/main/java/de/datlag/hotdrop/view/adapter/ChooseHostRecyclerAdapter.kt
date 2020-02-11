@@ -30,7 +30,7 @@ class ChooseHostRecyclerAdapter(private val activity: Activity, data: Set<Host>)
             '4' -> holder.deviceFAB.setImageResource(R.drawable.ic_tv_white_24dp)
             else -> holder.deviceFAB.setImageResource(R.drawable.ic_watch_white_24dp)
         }
-        val deviceUserName = hostName.substring(hostName.indexOf(activity.packageName) + activity.packageName.length)
+        val deviceUserName = hostName.substring(1)
         holder.deviceName.text = deviceUserName
         holder.deviceContainer.onFocusChangeListener = OnFocusChangeListener { _: View?, b: Boolean ->
             if (b) {
