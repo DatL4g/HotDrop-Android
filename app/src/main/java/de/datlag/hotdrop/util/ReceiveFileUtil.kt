@@ -6,7 +6,6 @@ import android.net.Uri
 import android.util.SparseArray
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatImageView
-import com.adroitandroid.near.model.Host
 import com.google.android.exoplayer2.ExoPlayerFactory
 import com.google.android.exoplayer2.extractor.DefaultExtractorsFactory
 import com.google.android.exoplayer2.source.ExtractorMediaSource
@@ -34,7 +33,7 @@ class ReceiveFileUtil(private val activity: AdvancedActivity) {
             .build()
 
     private val byteArrayList = SparseArray<ByteArray>()
-    fun onReceive(host: Host?, bytes: ByteArray?) {
+    fun onReceive(hostName: String, bytes: ByteArray) {
         val jsonObject = FileUtil.jsonObjectFromBytes(bytes)
         val name = jsonObject[activity.getString(R.string.name)].asString
         val path = jsonObject[activity.getString(R.string.path)].asString

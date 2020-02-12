@@ -8,8 +8,8 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.adroitandroid.near.model.Host
 import de.datlag.hotdrop.R
+import de.datlag.hotdrop.p2p.Host
 import de.datlag.hotdrop.view.adapter.ChooseHostRecyclerAdapter
 import de.datlag.hotdrop.view.adapter.ChooseHostRecyclerAdapter.ItemClickListener
 
@@ -42,15 +42,15 @@ class ChooseDeviceFragment : Fragment(), ItemClickListener {
         mListener = null
     }
 
-    fun setHosts(hosts: Set<Host>?) {
+    fun setHosts(hosts: Set<Host>) {
         mHosts = hosts
         setRecyclerGrid()
         adapter.notifyDataSetChanged()
     }
 
     private fun setRecyclerGrid() {
-        val span: Int = when (mHosts!!.size) {
-            1 -> 1
+        val span: Int = when (mHosts.size) {
+            0, 1 -> 1
             2, 3, 4 -> 2
             else -> 3
         }
@@ -64,24 +64,24 @@ class ChooseDeviceFragment : Fragment(), ItemClickListener {
 
     private fun initializeLogic() {
         setRecyclerGrid()
-        adapter = ChooseHostRecyclerAdapter(activity!!, mHosts!!)
+        adapter = ChooseHostRecyclerAdapter(activity!!, mHosts)
         adapter.setClickListener(this)
         recyclerView.adapter = adapter
     }
 
     override fun onItemClick(view: View?, position: Int) {
-        mListener!!.onChooseFragmentInteraction(mHosts!!.toTypedArray()[position])
+        mListener!!.onChooseFragmentInteraction(mHosts.toTypedArray()[position])
     }
 
     interface OnFragmentInteractionListener {
-        fun onChooseFragmentInteraction(host: Host?)
+        fun onChooseFragmentInteraction(host: Host)
     }
 
     companion object {
-        private var mHosts: Set<Host>? = null
+        private lateinit var mHosts: Set<Host>
 
         @JvmStatic
-        fun newInstance(hosts: Set<Host>?): ChooseDeviceFragment {
+        fun newInstance(hosts: Set<Host>): ChooseDeviceFragment {
             mHosts = hosts
             return ChooseDeviceFragment()
         }

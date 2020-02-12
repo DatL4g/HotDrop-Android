@@ -4,6 +4,7 @@ import android.app.Activity
 import android.os.Build
 import android.provider.Settings
 import android.util.DisplayMetrics
+import de.datlag.hotdrop.p2p.Host
 import kotlin.math.sqrt
 
 object DeviceUtil {
@@ -38,7 +39,23 @@ object DeviceUtil {
     }
 
     enum class DeviceType(val value: Int) {
-        WATCH(0), PHONE(1), PHABLET(2), TABLET(3), TV(4);
+        WATCH(0),
+        PHONE(1),
+        PHABLET(2),
+        TABLET(3),
+        TV(4);
 
+        companion object {
+            fun getType(value: Int): DeviceType? {
+                when(value) {
+                    WATCH.value -> return WATCH
+                    PHONE.value -> return PHONE
+                    PHABLET.value -> return PHABLET
+                    TABLET.value -> return TABLET
+                    TV.value -> return TV
+                }
+                return null
+            }
+        }
     }
 }

@@ -1,25 +1,23 @@
 package de.datlag.hotdrop.fragment
 
+import android.content.Context
 import android.graphics.drawable.Animatable
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AccelerateDecelerateInterpolator
-import android.view.animation.Animation
 import androidx.fragment.app.Fragment
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import de.datlag.hotdrop.MainActivity
 import de.datlag.hotdrop.R
 import de.datlag.hotdrop.extend.AdvancedActivity
-import de.datlag.hotdrop.p2p.DiscoverHost
-import de.datlag.hotdrop.view.animation.CircularAnimation
 
 class SearchDeviceFragment : Fragment() {
     private lateinit var rootView: View
     private lateinit var searchFAB: FloatingActionButton
     private var search = false
     private var animatable: Animatable? = null
+    private var listener: SearchCallback? = null
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         rootView = inflater.inflate(R.layout.fragment_search_device, container, false)
@@ -31,15 +29,14 @@ class SearchDeviceFragment : Fragment() {
     fun setSearch(search: Boolean) {
         this.search = search
         if (this.search) {
-            if(animatable != null) {
-                animatable!!.start()
-            }
-            discoverHost.startDiscovery()
+            animatable?.start()
+            listener?.onSearchChanged(true)
         } else {
-            if(animatable != null && animatable!!.isRunning) {
-                animatable!!.stop()
+            animatable?.let {
+                if (it.isRunning)
+                    it.stop()
             }
-            discoverHost.stopDiscovery()
+            listener?.onSearchChanged(false)
         }
     }
 
@@ -55,13 +52,25 @@ class SearchDeviceFragment : Fragment() {
         searchFAB.setOnClickListener { setSearch(!search) }
     }
 
+    override fun onAttach(context: Context) {
+        super.onAttach(context)
+        listener = if (context is SearchCallback) {
+            context
+        } else {
+            throw RuntimeException(context.toString()
+                    + " must implement SearchCallback")
+        }
+    }
+
+    interface SearchCallback {
+        fun onSearchChanged(search: Boolean)
+    }
+
     companion object {
         private lateinit var advancedActivity: AdvancedActivity
-        private lateinit var discoverHost: DiscoverHost
 
-        fun newInstance(activity: AdvancedActivity, discoverHost: DiscoverHost): SearchDeviceFragment {
+        fun newInstance(activity: AdvancedActivity): SearchDeviceFragment {
             advancedActivity = activity
-            Companion.discoverHost = discoverHost
             return SearchDeviceFragment()
         }
     }

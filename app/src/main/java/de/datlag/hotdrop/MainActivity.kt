@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.widget.AppCompatImageView
 import androidx.appcompat.widget.Toolbar
-import com.adroitandroid.near.model.Host
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdView
 import com.google.android.gms.ads.MobileAds
@@ -15,17 +14,21 @@ import com.google.android.play.core.appupdate.AppUpdateManagerFactory
 import com.google.android.play.core.install.model.AppUpdateType
 import com.google.android.play.core.install.model.UpdateAvailability
 import de.datlag.hotdrop.extend.AdvancedActivity
+import de.datlag.hotdrop.fragment.ChooseDeviceFragment
 import de.datlag.hotdrop.fragment.ChooseDeviceFragment.OnFragmentInteractionListener
 import de.datlag.hotdrop.fragment.SearchDeviceFragment
 import de.datlag.hotdrop.manager.InfoPageManager
 import de.datlag.hotdrop.manager.PermissionManager
 import de.datlag.hotdrop.manager.SettingsManager
-import de.datlag.hotdrop.p2p.DiscoverHost
 import io.noties.markwon.Markwon
 import io.noties.markwon.ext.strikethrough.StrikethroughPlugin
 import io.noties.markwon.html.HtmlPlugin
+import de.datlag.hotdrop.fragment.SearchDeviceFragment.SearchCallback
+import de.datlag.hotdrop.p2p.*
+import de.datlag.hotdrop.util.FileUtil
+import java.io.File
 
-class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
+class MainActivity : AdvancedActivity(), OnFragmentInteractionListener, SearchCallback {
     private val activity: AdvancedActivity = this@MainActivity
     private val toolbar: Toolbar by bindView(R.id.toolbar)
     val backgroundImage: AppCompatImageView by bindView(R.id.background_image)
@@ -47,7 +50,10 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
     private lateinit var markwon: Markwon
 
     lateinit var searchDeviceFragment: SearchDeviceFragment
-    private lateinit var discoverHost: DiscoverHost
+    var chooseDeviceFragment: ChooseDeviceFragment? = null
+    var showingChooseFragment = false
+    private lateinit var hostDiscovery: HostDiscovery
+    private lateinit var fileTransfer: FileTransfer
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -68,7 +74,7 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
         permissionManager.check()
         MobileAds.initialize(activity, getString(R.string.admob_app_id))
         adRequest = AdRequest.Builder().build()
-        discoverHost = DiscoverHost(activity)
+        hostDiscovery = HostDiscovery(activity)
     }
 
     private fun initViewLogic() {
@@ -83,13 +89,15 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
                 .usePlugin(StrikethroughPlugin.create())
                 .usePlugin(HtmlPlugin.create())
                 .build()
-        searchDeviceFragment = SearchDeviceFragment.newInstance(activity, discoverHost)
+        searchDeviceFragment = SearchDeviceFragment.newInstance(activity)
         switchFragment(searchDeviceFragment, R.id.fragment_view)
         infoPageManager = InfoPageManager(activity, mainLayout, infoLayout)
         infoPageManager.codeIcon = codeIcon
         infoPageManager.githubIcon = githubIcon
         infoPageManager.helpIcon = helpIcon
         infoPageManager.init()
+
+        fileTransfer = FileTransfer(activity)
     }
 
     private fun initListener() {
@@ -120,27 +128,46 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
         }
     }
 
-    override fun onChooseFragmentInteraction(host: Host?) {
-        host?.let {
+    override fun onChooseFragmentInteraction(host: Host) {
+        /*
             activity.applyDialogAnimation(MaterialAlertDialogBuilder(activity)
-                    .setTitle(it.name)
+                    .setTitle(host.name)
                     .setMessage("Request Connection with ${host.name}")
                     .setPositiveButton("Request") { _, _ ->
-                        discoverHost.send(host, DiscoverHost.MESSAGE_REQUEST_START_TRANSFER.toByteArray())
+                        host.send("START_TRANSFER".toByteArray())
                     }
                     .setNeutralButton("Cancel", null)
                     .create()).show()
-        }
+         */
+        applyDialogAnimation(MaterialAlertDialogBuilder(activity)
+                .setTitle(host.name)
+                .setMessage("Do you want to send a File or a Folder to this device?\nFolders will be packed in a ZIP-Archiv and then sending the .zip file.")
+                .setPositiveButton("File") { _, _ ->
+                    FileUtil.chooseFile(activity, null, null, object: FileUtil.FileChooseCallback{
+                        override fun onChosen(path: String?, file: File?) {
+                            fileTransfer.send(host, file!!)
+                        }
+                    })
+                }
+                .setNegativeButton("Folder") { _, _ ->
+                    FileUtil.chooseFolder(activity, null, object: FileUtil.FolderChooseCallback {
+                        override fun onChosen(path: String?, file: File?) {
+                            fileTransfer.send(host, FileUtil.folderToFile(activity, file!!))
+                        }
+                    })
+                }
+                .setNeutralButton(R.string.cancel, null)
+                .create()).show()
     }
 
     override fun onStop() {
         super.onStop()
-        discoverHost.stopDiscovery()
+        hostDiscovery.stop()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        discoverHost.stopDiscovery()
+        hostDiscovery.stop()
         activity.finishAffinity()
     }
 
@@ -164,5 +191,41 @@ class MainActivity : AdvancedActivity(), OnFragmentInteractionListener {
 
     companion object {
         private const val UPDATE_REQUEST_CODE = 1337
+    }
+
+    override fun onSearchChanged(search: Boolean) {
+        if (search) {
+            hostDiscovery.start(object: DiscoveryCallback {
+                override fun onHostsFound(hosts: Set<Host>) {
+                    if (hosts.isEmpty()) {
+                        switchSearchAndChoose(false)
+                        return
+                    }
+
+                    if (chooseDeviceFragment == null) {
+                        chooseDeviceFragment = ChooseDeviceFragment.newInstance(hosts)
+                        switchFragment(chooseDeviceFragment!!, R.id.fragment_view)
+                    } else {
+                        chooseDeviceFragment!!.setHosts(hosts)
+                    }
+                    switchSearchAndChoose(true)
+                }
+            })
+        } else {
+            hostDiscovery.stop()
+            switchSearchAndChoose(false)
+        }
+    }
+
+    private fun switchSearchAndChoose(showChooseFragment: Boolean) {
+        if (showChooseFragment && !showingChooseFragment) {
+            chooseDeviceFragment?.let {
+                switchFragment(it, R.id.fragment_view)
+                showingChooseFragment = true
+            }
+        } else {
+            switchFragment(searchDeviceFragment, R.id.fragment_view)
+            showingChooseFragment = false
+        }
     }
 }

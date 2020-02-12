@@ -32,7 +32,8 @@
         android:textSize="12sp"
         android:maxLines="1"
         android:gravity="center"
-        android:paddingStart="2dp"
-        android:paddingEnd="2dp"/>
+        android:paddingStart="1dp"
+        android:paddingEnd="1dp"
+        android:ellipsize="end"/>
 
 </androidx.appcompat.widget.LinearLayoutCompat>
