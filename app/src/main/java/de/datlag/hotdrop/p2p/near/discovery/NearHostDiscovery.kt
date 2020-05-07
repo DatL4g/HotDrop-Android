@@ -3,11 +3,15 @@ package de.datlag.hotdrop.p2p.near.discovery
 import android.os.Looper
 import com.adroitandroid.near.discovery.NearDiscovery
 import de.datlag.hotdrop.extend.AdvancedActivity
+import de.datlag.hotdrop.p2p.DiscoveryService
 import de.datlag.hotdrop.p2p.Host
 import de.datlag.hotdrop.p2p.HostCallback
+import de.datlag.hotdrop.p2p.HostDiscovery
 import de.datlag.hotdrop.util.DeviceUtil
 
-class NearHostDiscovery(private val advancedActivity: AdvancedActivity, private val callback: HostCallback) {
+class NearHostDiscovery(private val advancedActivity: AdvancedActivity,
+                        private val callback: HostCallback) : DiscoveryService(advancedActivity, callback) {
+
     val nearDiscovery = NearDiscovery.Builder()
             .setContext(advancedActivity)
             .setDiscoveryTimeoutMillis(Long.MAX_VALUE)
@@ -18,13 +22,13 @@ class NearHostDiscovery(private val advancedActivity: AdvancedActivity, private 
             .setDiscoveryListener(discoveryListener, Looper.getMainLooper())
             .build()
 
-    fun start() {
+    override fun start() {
         nearDiscovery.makeDiscoverable(DeviceUtil.getDeviceType(advancedActivity).toString() +
                 DeviceUtil.getDeviceName(advancedActivity), advancedActivity.packageName)
         nearDiscovery.startDiscovery()
     }
 
-    fun stop() {
+    override fun stop() {
         nearDiscovery.makeNonDiscoverable()
         nearDiscovery.stopDiscovery()
     }
@@ -48,7 +52,7 @@ class NearHostDiscovery(private val advancedActivity: AdvancedActivity, private 
                 host.forEach {
                     hosts.add(Host(advancedActivity, it, nearDiscovery))
                 }
-                callback.onHostUpdate(hosts.toSet())
+                callback.onHostUpdate(hosts.toSet(), HostDiscovery.NEAR_SERVICE)
             }
         }
 
